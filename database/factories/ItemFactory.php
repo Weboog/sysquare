@@ -20,7 +20,7 @@ class ItemFactory extends Factory
     {
 
         $brand = Brand::whereHas('categories')->inRandomOrder()->first();
-        $category = $brand->categories()->with('types')->inRandomOrder()->first();
+        $category = $brand->categories()->whereHas('types')->inRandomOrder()->first();
         $type = $category->types()->inRandomOrder()->get()->first();
 
         return [

@@ -14,7 +14,9 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->string('serial')->unique();
-            $table->enum('status', ['registered', 'validating', 'rejected', 'waiting', 'delivered'])->default('registered');
+            $table->enum('status', ['registered', 'validating', 'validated', 'rejected', 'delivering', 'delivered', 'undelivered'])->default('registered');
+            $table->timestamp('validated')->nullable();
+            $table->timestamp('delivered')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

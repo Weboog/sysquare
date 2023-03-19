@@ -24,15 +24,16 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-//         User::factory(10)->create();
-//         Brand::factory(50)->create();
-//         Category::factory(30)->create();
-//         Type::factory(100)->create();
-//        BrandCategory::factory(50)->create();
-//        Supplier::factory(50)->create();
-//        Item::factory(10)->create();
-//        ItemSupplier::factory(350)->create();
-//        Order::factory(150)->create();
-//        OrderItemSupplier::factory(329)->create();
+    //    User::factory(10)->create();
+    //    Brand::factory(50)->create();
+    //    Category::factory(30)->create();
+        //   Type::factory(100)->create();
+    //    CategoryType::factory(31)->create(); //Do not seed this factory since the type table already has cotegory_id key
+    //    BrandCategory::factory(50)->create();
+    //    Supplier::factory(50)->create();
+//       Item::factory(10)->create();
+//        ItemSupplier::factory(411)->create();
+//        Order::factory(350)->create();
+//        OrderItemSupplier::factory(300)->create();
     }
 }

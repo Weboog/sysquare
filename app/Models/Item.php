@@ -18,16 +18,14 @@ class Item extends Model
     protected $fillable = [
         'reference',
         'title',
-        'price',
         'condition',
-        'brand',
-        'category',
-        'type'
+        'brand_id',
+        'category_id',
+        'type_id'
     ];
 
     protected $casts = [
         'id' => 'integer',
-        'price' => 'double',
         'created_at' => 'string'
     ];
 
@@ -56,51 +54,32 @@ class Item extends Model
 
     public function orders(): BelongsToMany
     {
-        return $this->belongsToMany(Order::class);
+        return $this->belongsToMany(Order::class, 'order_item_supplier')->withPivot(['quantity', 'missed']);
     }
 
     public function orderSuppliers(): BelongsToMany
     {
-        return $this->belongsToMany(Supplier::class, 'order_item_supplier');
+        return $this->belongsToMany(Supplier::class, 'order_item_supplier')->withPivot(['quantity', 'missed']);
     }
 
     public function setReferenceAttribute($str)
     {
         $brandName = Brand::find($str[0])->name;
         $categoryName = Category::find($str[1])->name;
-        $typeName = Type::find($str[2])->name;
+//        $typeName = Type::find($str[2])->name;
+        $typeId = $str[2];
         $title = $str[3];
         $serial = strtoupper(
             sprintf(
                 '%s%s%s%s',
                 substr($brandName, 0, 1),
                 substr($categoryName, 0, 1),
-                substr($typeName, 0, 1),
+//                substr($typeName, 0, 1),
+                '0'.$typeId,
                 substr($title, 0, 1),
             )
         );
         $this->attributes['reference'] = $serial;
-
-//        if (is_string($str)) {
-//            $this->attributes['reference'] = '';
-//            $this->attributes['reference'] = $this->serial .= $str;
-//        } else {
-//            $brandName = Brand::find($str[0])->name;
-//            $categoryName = Category::find($str[1])->name;
-//            $typeName = Type::find($str[2])->name;
-//            $title = $str[3];
-//            $serial = strtoupper(
-//                sprintf(
-//                    '%s%s%s%s',
-//                    substr($brandName, 0, 1),
-//                    substr($categoryName, 0, 1),
-//                    substr($typeName, 0, 1),
-//                    substr($title, 0, 1),
-//                )
-//            );
-//            $this->serial = $serial;
-//            $this->attributes['reference'] = '-';
-//        }
 
     }
 }

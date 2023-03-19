@@ -17,6 +17,7 @@ return new class extends Migration
             $table->unsignedBigInteger('item_id');
             $table->unsignedBigInteger('supplier_id');
             $table->integer('quantity');
+            $table->boolean('missed')->default(false);
 
             $table->foreign('order_id')->references('id')->on('orders');
             $table->foreign('item_id')->references('id')->on('items');

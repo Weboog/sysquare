@@ -32,12 +32,16 @@ class Supplier extends Model
 
     public function orders(): BelongsToMany
     {
-        return $this->belongsToMany(Order::class);
+        return $this->belongsToMany(Order::class, 'order_item_supplier');
     }
 
     public function orderItems(): BelongsToMany
     {
-        return $this->belongsToMany(Item::class, 'order_item_supplier')->withPivot('quantity');
+        return $this->belongsToMany(Item::class, 'order_item_supplier')->withPivot(['order_id', 'quantity']);
+    }
+
+    public function getItemPrice($id) {
+        return $this->items()->where('id', $id)->get()->pluck('pivot.price')->first();
     }
 
 

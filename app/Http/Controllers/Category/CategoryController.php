@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Category;
 use App\Http\Resources\CategoryResource;
 use App\Models\Category;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\BrandResource;
+use App\Http\Resources\TypeResource;
+use App\Models\Type;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
@@ -15,7 +18,7 @@ class CategoryController extends Controller
      */
     public function index(): AnonymousResourceCollection
     {
-        $categories = Category::OrderByDesc('name');
+        $categories = Category::OrderBy('name');
         return CategoryResource::collection($categories->get());
     }
 
@@ -25,7 +28,17 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $rules = [
+            'name' => 'required|string|min:3'
+        ];
+
+        $request->validate($rules);
+
+        $category = Category::create([
+            'name' => $request->name
+        ]);
+
+        return new CategoryResource($category);
     }
 
     /**
@@ -41,7 +54,20 @@ class CategoryController extends Controller
      */
     public function update(Request $request, Category $category)
     {
-        //
+        $rules = [
+            'name' => 'required|string|min:3',
+        ];
+
+        $request->validate($rules);
+
+        $category->name = $request->name;
+
+        if ($category->isDirty('name')) {
+            $category->save();
+            return new CategoryResource($category);
+        } else {
+            return response()->json(['message' => 'NOTHING_CHANGED'], 200);
+        }
     }
 
     /**
@@ -49,6 +75,21 @@ class CategoryController extends Controller
      */
     public function destroy(Category $category)
     {
-        //
+        $category->deleteOrFail();
+        return response()->json(['message' => 'DELETED'], 200);
+    }
+
+    public function brands(Category $category) {
+
+        $brands = $category->brands()->orderBy('name');
+        return BrandResource::collection($brands->get());
+
+    }
+
+    public function types(Category $category) {
+
+        $types = $category->types()->orderBy('name');
+        return TypeResource::collection($types->get());
+
     }
 }

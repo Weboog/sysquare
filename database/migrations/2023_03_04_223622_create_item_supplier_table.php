@@ -11,17 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('item_supplier', function (Blueprint $table) {
-            Schema::create('item_supplier', function (Blueprint $table) {
-                $table->unsignedBigInteger('item_id');
-                $table->unsignedBigInteger('supplier_id');
-                $table->double('price');
+        Schema::create('item_supplier', function (Blueprint $table) {
+            $table->unsignedBigInteger('item_id');
+            $table->unsignedBigInteger('supplier_id');
+            $table->double('price');
 
-                $table->unique(['item_id', 'supplier_id']);
+            $table->unique(['item_id', 'supplier_id']);
 
-                $table->foreign('item_id')->references('id')->on('items');
-                $table->foreign('supplier_id')->references('id')->on('suppliers');
-            });
+            $table->foreign('item_id')->references('id')->on('items');
+            $table->foreign('supplier_id')->references('id')->on('suppliers');
         });
     }
 
