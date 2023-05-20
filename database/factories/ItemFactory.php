@@ -29,7 +29,7 @@ class ItemFactory extends Factory
             'brand_id' => $b = $brand->id,
             'category_id' => $c = $category->id,
             'type_id' => $t = $type->id,
-            'reference' => [$b, $c, $t, $title]
+            'ref' => [$b, $c, $t, $title]
         ];
     }
 }

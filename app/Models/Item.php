@@ -16,13 +16,15 @@ class Item extends Model
     private $serial = '';
 
     protected $fillable = [
-        'reference',
+        'ref',
         'title',
         'condition',
         'brand_id',
         'category_id',
         'type_id'
     ];
+
+    protected $hidden = ['pivot'];
 
     protected $casts = [
         'id' => 'integer',
@@ -62,7 +64,7 @@ class Item extends Model
         return $this->belongsToMany(Supplier::class, 'order_item_supplier')->withPivot(['quantity', 'missed']);
     }
 
-    public function setReferenceAttribute($str)
+    public function setRefAttribute($str)
     {
         $brandName = Brand::find($str[0])->name;
         $categoryName = Category::find($str[1])->name;
@@ -79,7 +81,7 @@ class Item extends Model
                 substr($title, 0, 1),
             )
         );
-        $this->attributes['reference'] = $serial;
+        $this->attributes['ref'] = $serial;
 
     }
 }

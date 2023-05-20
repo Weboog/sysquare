@@ -15,6 +15,8 @@ use App\Http\Resources\ItemSupplierResource;
 use App\Http\Resources\TypeResource;
 use App\Models\Supplier;
 use App\Models\Type;
+use App\Traits\Filters;
+use Illuminate\Validation\ValidationRule;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -23,24 +25,59 @@ use Illuminate\Validation\Rule;
 
 class ItemController extends Controller
 {
+
+    use Filters;
+
+    public function __construct()
+    {
+        $this->middleware('parse.array:suppliers')->only('store');
+        $this->middleware('parse.array:prices')->only('store');   
+    }
     /**
      * Display a listing of the resource.
      */
     public function index(): AnonymousResourceCollection
     {
         $items = Item::OrderByDesc('id');
+        $length = null;
 
         foreach (request()->query() as $key => $value) {
-            if ($value != 'null') {
-                if ($key == 'missed' && $value == 1) {
-                    $items = $items->whereHas('orders', function ($query) {
-                        $query->where('missed', '=', 1);
-                    });
-                }
+
+            if ($key == 'length') {
+                $length = $value;
+            }
+
+            //Missed filter
+            if ($key == 'missed' and $value == 1) {
+                $items->whereHas('orders', function ($query) {
+                    $query->where('missed', '=', 1);
+                });
+            }
+
+            //By Brand
+            if ($key == 'brand' and $value != 'null') {
+                $items->where('brand_id', $value);
+            }
+
+            //By Category
+            if ($key == 'category' and $value != 'null') {
+                $items->where('category_id', $value);
+            }
+
+            //By Type
+            if ($key == 'type' and $value != 'null') {
+                $items->where('type_id', $value);
+            }
+
+            //Search
+            if ($key == 'q' and $value != 'null') {
+                $items
+                ->where(DB::raw('lower(title)'), 'like', strtolower("%$value%"))
+                ->orWhere(DB::raw('lower(ref)'), 'like', strtolower("%$value%"));
             }
         }
 
-        return ItemResource::collection($items->get());
+        return ItemResource::collection($items->paginate($length == null ? 10 : $length)->withQueryString());
     }
 
 
@@ -52,11 +89,13 @@ class ItemController extends Controller
         $rules = [
             'title' => 'required|string|min:3',
             'condition' => 'required|string',
-            'brand' => ['required', 'numeric', Rule::in(Brand::all()->pluck('id')->toArray())],
-            'category' => ['required', 'numeric', Rule::in(Category::all()->pluck('id')->toArray())],
-            'type' => ['required', 'numeric', Rule::in(Type::all()->pluck('id')->toArray())],
-            'supplier' => ['numeric', Rule::in(Supplier::all()->pluck('id')->toArray())],
-            'price' => [$request->supplier != null ? 'required' : 'in:null', 'numeric'],
+            'brand' => ['required', 'numeric', Rule::exists('brands', 'id')],
+            'category' => ['required', 'numeric', Rule::exists('categories', 'id')],
+            'type' => ['required', 'numeric', Rule::exists('types', 'id')],
+            'suppliers' => 'array',
+            'suppliers.*' => ['numeric', Rule::exists('suppliers', 'id')],
+            'prices' => ['required_if:suppliers,array', 'array'],
+            'prices.*' => ['numeric'],
         ];
 
         $request->validate($rules);
@@ -69,11 +108,19 @@ class ItemController extends Controller
                 'brand_id' => $request->brand,
                 'category_id' => $request->category,
                 'type_id' => $request->type,
-                'reference' => [$request->brand, $request->category, $request->type, $request->title]
+                'ref' => [$request->brand, $request->category, $request->type, $request->title]
             ]);
 
-            if ($request->supplier) {
-                $item->suppliers()->attach($request->supplier, ['price' => $request->price]);
+            if ($request->suppliers) {
+                $suppliers = $request->suppliers;
+                $prices = $request->prices;
+                $data = [];
+
+                for ($i = 0; $i < count($suppliers); $i++) {
+                    $data[$suppliers[$i]] = ['price' => $prices[$i]];
+                }
+
+                $item->suppliers()->attach($data);
             }
 
 
@@ -99,26 +146,48 @@ class ItemController extends Controller
         $rules = [
             'title' => 'required|string|min:3',
             'condition' => 'required|string',
-            'brand' => ['required', 'numeric', Rule::in(Brand::all()->pluck('id')->toArray())],
-            'category' => ['required', 'numeric', Rule::in(Category::all()->pluck('id')->toArray())],
-            'type' => ['required', 'numeric', Rule::in(Type::all()->pluck('id')->toArray())]
+            'brand' => ['required', 'numeric', Rule::exists('brands', 'id')],
+            'category' => ['required', 'numeric', Rule::exists('categories', 'id')],
+            'type' => ['required', 'numeric', Rule::exists('types', 'id')],
+            'suppliers' => 'array',
+            'suppliers.*' => ['numeric', Rule::exists('suppliers', 'id')],
+            'prices' => ['required_if:suppliers,array', 'array'],
+            'prices.*' => ['numeric'],
         ];
 
         $request->validate($rules);
+        
+        return DB::transaction(function() use ($item, $request) {
 
-        $item->title = $request->title;
-        $item->condition = $request->condition;
-        $item->brand_id = $request->brand;
-        $item->category_id = $request->category;
-        $item->type_id = $request->type;
+            $item->title = $request->title;
+            $item->condition = $request->condition;
+            $item->brand_id = $request->brand;
+            $item->category_id = $request->category;
+            $item->type_id = $request->type;
+
+            if ($item->isClean() && !$request->has('suppliers')) {
+                return response()->json(['message' => 'NOTHING_CHANGED'], 400);
+            }
 
 
-        if ($item->isDirty()) {
-            $item->save();
+            if ($item->isDirty()) {
+                $item->save();
+            }
+
+            //Pivot table
+            $suppliers = $request->suppliers;
+            $prices = $request->prices;
+            $data = [];
+            for ($i = 0; $i < count($suppliers); $i++) {
+                $data[$suppliers[$i]] = ['price' => $prices[$i]];
+            }
+            $item->suppliers()->sync($data);
+
+
             return new ItemResource($item);
-        }
+        });
 
-        return response()->json(['message' => 'NOTHING_CHANGED'], 200);
+        
     }
 
     /**

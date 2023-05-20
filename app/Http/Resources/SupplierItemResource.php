@@ -21,14 +21,14 @@ class SupplierItemResource extends JsonResource
 
         return [
             'id' => $this->id,
-            'reference' => $this->reference,
+            'reference' => $this->ref,
             'title' => $this->title,
             'condition' => $this->condition,
-            'price' => $suppliers->where('id', $supplier_id)->pluck('pivot.price')->first(),
-            'brand' => $this->brand()->first(['id', 'name']),
-            'category' => $this->category()->first(['id', 'name']),
-            'type' => $this->type()->first(['id', 'name']),
-            'suppliers' => $this->suppliers()->where('id', '<>', $supplier_id)->get(['id', 'name']),
+            'price' => $suppliers->where('suppliers.id', $supplier_id)->pluck('pivot.price')->first(),
+            'brand' => $this->brand()->first(['brands.id', 'name']),
+            'category' => $this->category()->first(['categories.id', 'name']),
+            'type' => $this->type()->first(['types.id', 'name']),
+            'suppliers' => $this->suppliers()->where('suppliers.id', '<>', $supplier_id)->get(['suppliers.id', 'name']),
             'created' => $this->created_at,
             'deleted' => $this->deleted_at
         ];

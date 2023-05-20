@@ -8,26 +8,43 @@ use App\Http\Resources\CategoryResource;
 use App\Http\Resources\TypeResource;
 use App\Models\Category;
 use App\Models\Type;
+use App\Traits\Filters;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class TypeController extends Controller
 {
+
+    use Filters;
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
         $types = Type::OrderBy('name');
-        return TypeResource::collection($types->get());
-    }
+        $length = null;
+        $paginate = true;
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        foreach (request()->query() as $key => $value) {
+
+            if ($key == 'length') {
+                $length = $value;
+            }
+
+            if ($key == 'paginate') {
+                $paginate = (bool) (int) $value;
+            }
+
+            $this->parseQuery('q', function ($value) use ($types) {
+                $types->where('name', 'like', "%$value%");
+            });
+        }
+
+        return TypeResource::collection(
+            $paginate 
+            ? $types->paginate($length == null ? 10 : $length)->withQueryString()
+            : $types->get()
+        );
     }
 
     /**
@@ -47,7 +64,7 @@ class TypeController extends Controller
         $type->category_id = $request->category;
         $type->save();
 
-        return response()->json($type);
+        return new TypeResource($type);
     }
 
     /**
@@ -72,7 +89,7 @@ class TypeController extends Controller
     public function update(Request $request, Type $type)
     {
 
-        
+
 
         $rules = [
             'name' => 'required|string|min:3',
@@ -94,7 +111,7 @@ class TypeController extends Controller
             return response()->json(['message' => 'NOTHING_CHANGED'], 200);
 
         }
-        
+
     }
 
     /**

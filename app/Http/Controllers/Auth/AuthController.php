@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
+use Exception as GlobalException;
 use http\Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -25,7 +27,7 @@ class AuthController extends Controller
         //Validate request
         try {
             $credentials = $request->validate($rules);
-        } catch (Exception $e) {
+        } catch (GlobalException $e) {
             return response()->json(['message' => $e->getMessage()], 401);
         }
 
@@ -35,7 +37,10 @@ class AuthController extends Controller
         }
 
         $accessToken  = Auth::user()->createToken(Date::now(), ['*'])->accessToken;
-        return response()->json($accessToken);
+        return response()->json([
+            'user' => new UserResource(Auth::user()),
+            'accessToken' => $accessToken
+        ]);
 
     }
 

@@ -17,7 +17,8 @@ class BrandResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'created' => $this->created_at
+            'created' => $this->created_at,
+            'deleted' => $this->deleted_at
         ];
     }
 }

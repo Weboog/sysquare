@@ -8,18 +8,43 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\BrandResource;
 use App\Http\Resources\TypeResource;
 use App\Models\Type;
+use App\Traits\Filters;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class CategoryController extends Controller
 {
+
+    use Filters;
     /**
      * Display a listing of the resource.
      */
     public function index(): AnonymousResourceCollection
     {
         $categories = Category::OrderBy('name');
-        return CategoryResource::collection($categories->get());
+        $length = null;
+        $paginate = true;
+
+        foreach (request()->query() as $key => $value) {
+
+            if ($key == 'length') {
+                $length = $value;
+            }
+
+            if ($key == 'paginate') {
+                $paginate = (bool) (int) $value;
+            }
+
+            $this->parseQuery('q', function ($value) use ($categories) {
+                $categories->where('name', 'like', "%$value%");
+            });
+        }
+
+        return CategoryResource::collection( 
+            $paginate 
+            ? $categories->paginate($length == null ? 10 : $length)->withQueryString() 
+            : $categories->get()
+        );
     }
 
 

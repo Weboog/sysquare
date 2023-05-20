@@ -11,6 +11,7 @@ use App\Http\Resources\OrderItem;
 use App\Http\Resources\OrderSupplierResource;
 use App\Models\Supplier;
 use App\Rules\OrderStatusRule;
+use App\Traits\Filters;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -18,13 +19,40 @@ use Illuminate\Validation\Rule;
 
 class OrderController extends Controller
 {
+
+    use Filters;
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
+
         $orders = Order::OrderByDesc('id');
-        return response()->json($orders->get());
+        $length = null;
+
+        foreach (request()->query() as $key => $value) {
+
+
+            if ($key == 'length') {
+                $length = $value;
+            }
+
+            if ($key == 'status' and in_array($value, array_map(fn($case) => $case->value, OrderStatus::cases()))) {
+                $orders->where('status', $value);
+            }
+
+            if ($key == 'q' and $value != 'null') {
+                $orders->where('serial', 'like', "%$value%");
+            }
+
+            if ($key == 'range') {
+                $this->extractRange($value, function($v) use ($orders) {
+                    $orders->whereBetween('created_at', $v);
+                });
+            }
+        }
+
+        return OrderResource::collection(($orders->paginate($length == null ? 10 : $length)->withQueryString()));
     }
 
     /**
@@ -143,6 +171,10 @@ class OrderController extends Controller
         return response()->json(['message' => 'DELETED'], 200);
     }
 
+    /*
+     * Relationships////////////////////////////////////////////////
+     */
+
     public function items(Order $order) {
 
         $items = $order->items;
@@ -156,4 +188,13 @@ class OrderController extends Controller
         return OrderSupplierResource::collection($suppliers);
 
     }
+
+    public function setOrderStatus(Request $request, Order $order) {
+        $rule = [
+            'status' => ['required', 'string', new OrderStatusRule]
+        ];
+        $request->validate($rule);
+        return new OrderResource($order->setStatus($request->status));
+    }
+
 }

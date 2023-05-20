@@ -25,6 +25,8 @@ class Supplier extends Model
         'created_at' => 'string'
     ];
 
+    protected $hidden = ['pivot'];
+
     public function items(): BelongsToMany
     {
         return $this->belongsToMany(Item::class, 'item_supplier')->withPivot('price');
@@ -41,13 +43,13 @@ class Supplier extends Model
     }
 
     public function getItemPrice($id) {
-        return $this->items()->where('id', $id)->get()->pluck('pivot.price')->first();
+        return $this->items()->where('items.id', $id)->get()->pluck('pivot.price')->first();
     }
 
 
     public function setCodeAttribute(String $str): void {
 
-        $this->attributes['code'] = sprintf("%u", crc32($str)) ;
+        $this->attributes['code'] = sprintf("%08x", crc32($str));
 
     }
 }

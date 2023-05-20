@@ -2,22 +2,51 @@
 
 namespace App\Http\Controllers\Supplier;
 
+use App\Http\Resources\OrderResource;
 use App\Http\Resources\SupplierResource;
 use App\Models\Supplier;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\SupplierItemResource;
-use Exception;
+use App\Traits\Randomize;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class SupplierController extends Controller
 {
+    use Randomize;
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $suppliers = Supplier::orderByDesc('id');
-        return SupplierResource::collection($suppliers->get());
+        $suppliers = Supplier::orderBy('name');
+        $length = null;
+        $paginate = true;
+
+        foreach (request()->query() as $key => $value) {
+
+            if ($key == 'length') {
+                $length = $value;
+            }
+
+            if ($key == 'paginate') {
+                $paginate = (bool) (int) $value;
+            }
+
+            if ($key == 'q' and $value != 'null') {
+                $suppliers
+                ->where(DB::raw('lower(name)'), 'like', strtolower("%$value%"))
+                ->orWhere('code', 'like', "%$value%")
+                ->orWhere(DB::raw('lower(email)'), 'like', strtolower("%$value%"))
+                ->orWhere('phone', 'like', "%$value%");
+            }
+        }
+
+        return SupplierResource::collection(
+            $paginate
+            ? $suppliers->paginate($length == null ? 10 : $length)->withQueryString()
+            : $suppliers->get()
+        );
     }
 
 
@@ -28,7 +57,6 @@ class SupplierController extends Controller
     {
 
         $rules = [
-            'code' => 'required|string',
             'name' => 'required|string',
             'phone' => ['required', 'string', 'regex:/^((\+(?!0)[\d]{1,3})|0)[5-7]{1}([0-9]{2}){4}$/i'],
             'email' => 'required|email',
@@ -38,7 +66,7 @@ class SupplierController extends Controller
         $request->validate($rules);
 
         $supplier = Supplier::create([
-            'code' => $request->code,
+            'code' =>  $request->email,
             'name' => $request->name,
             'phone' => $request->phone,
             'email' => $request->email,
@@ -105,5 +133,10 @@ class SupplierController extends Controller
         $items = $supplier->items;
         return SupplierItemResource::collection($items);
 
+     }
+
+     public function orders(Supplier $supplier) {
+        $orders = $supplier->orders;
+        return OrderResource::collection($orders);
      }
 }

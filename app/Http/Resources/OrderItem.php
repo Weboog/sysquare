@@ -18,14 +18,14 @@ class OrderItem extends JsonResource
 
         return [
             'id' => $this->id,
-            'reference' => $this->reference,
+            'reference' => $this->ref,
             'title' => $this->title,
             'condition' => $this->condition,
             'brand' => $this->brand()->first(['id', 'name']),
             'category' => $this->category()->first(['id', 'name']),
             'type' => $this->type()->first(['id', 'name']),
-            'supplier' => $supplier = $this->orderSuppliers()->where('id', $this->pivot->supplier_id)->get(['id', 'name'])->first(),
-            'price' => $supplier->getItemPrice($this->id),
+            'supplier' => $supplier = $this->orderSuppliers()->where('suppliers.id', $this->pivot->supplier_id)->get(['suppliers.id', 'name'])->first(),
+            'price' => (double) $supplier->getItemPrice($this->id),
             'quantity' => $this->pivot->quantity,
             'created' => (string) $this->created_at,
             'deleted' => $this->deleted_at,

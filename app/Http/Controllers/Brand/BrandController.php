@@ -7,17 +7,48 @@ use App\Models\Brand;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\BrandCategoryResource;
 use App\Http\Resources\TypeResource;
+use App\Traits\Destroy;
+use App\Traits\Filters;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class BrandController extends Controller
 {
+
+    use Filters, Destroy;
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(): AnonymousResourceCollection
     {
+
         $brands = Brand::OrderBy('name');
-        return BrandResource::collection($brands->get());
+        $length = null;
+        $paginate = true;
+
+        foreach(request()->query() as $key => $value) {
+
+            if ($key == 'length') {
+                $length = $value;
+            }
+
+            if ($key == 'paginate') {
+                $paginate = (bool) (int) $value;
+            }
+
+            $this->parseQuery('q', function($value) use ($brands) {
+                $brands->where('name', 'like', "%$value%");
+            });
+
+        }
+
+        return BrandResource::collection(
+            $paginate
+            ? $brands->paginate($length == null ? 10 : $length)->withQueryString()
+            : $brands->get()
+        );
+
     }
 
     /**
@@ -47,7 +78,7 @@ class BrandController extends Controller
     }
 
     public function edit (Brand $brand) {
-        
+
         return new BrandResource($brand);
     }
 
@@ -75,10 +106,9 @@ class BrandController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Brand $brand)
+    public function destroy(Brand $brand): JsonResponse
     {
-        $brand->deleteOrFail();
-        return response()->json(['message' => 'DELETED'], 200);
+        return $this->delete($brand);
     }
 
     /**
@@ -96,6 +126,6 @@ class BrandController extends Controller
 
         $types = $brand->categories()->with('types')->get()->pluck('types')->flatten(2);
         return TypeResource::collection($types);
-        
+
      }
 }

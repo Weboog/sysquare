@@ -6,6 +6,7 @@ use App\Http\Controllers\Category\CategoryController;
 use App\Http\Controllers\Item\ItemController;
 use App\Http\Controllers\LowProfileController;
 use App\Http\Controllers\Order\OrderController;
+use App\Http\Controllers\Summary\SummaryController;
 use App\Http\Controllers\Supplier\SupplierController;
 use App\Http\Controllers\Type\TypeController;
 use App\Http\Controllers\User\UserController;
@@ -33,10 +34,12 @@ Route::middleware('auth:api')->group(function () {
     Route::resource('orders', OrderController::class)->except('create');
     Route::get('orders/{order}/items', [OrderController::class, 'items']);
     Route::get('orders/{order}/suppliers', [OrderController::class, 'suppliers']);
+    Route::patch('orders/{order}/setOrderStatus', [OrderController::class, 'setOrderStatus']);
 
     //Suppliers Routes///////////////////////////////////////////////////////////////////////////////
     Route::resource('suppliers', SupplierController::class)->except('create');
     Route::get('suppliers/{supplier}/items', [SupplierController::class, 'items']);
+    Route::get('suppliers/{supplier}/orders', [SupplierController::class, 'orders']);
 
     //Brands Routes///////////////////////////////////////////////////////////////////////////////////
     Route::resource('brands', BrandController::class)->except('create');
@@ -59,6 +62,11 @@ Route::middleware('auth:api')->group(function () {
         Route::get('categories', [LowProfileController::class, 'categories']);
         Route::get('types', [LowProfileController::class, 'types']);
         Route::get('suppliers', [LowProfileController::class, 'suppliers']);
+    });
+
+    //Summary/////////////////////////////////////////////////////////////////////////////////////////
+    Route::prefix('summary')->group(function() {
+        Route::get('orders', [SummaryController::class, 'orders']);
     });
 
 });

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('items', function (Blueprint $table) {
             $table->id();
-            $table->string('reference')->unique();
+            $table->string('ref')->unique();
             $table->string('title');
             $table->string('condition');
             $table->unsignedBigInteger('brand_id');

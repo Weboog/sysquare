@@ -17,7 +17,7 @@ class ItemResource extends JsonResource
         $suppliers = $this->suppliers();
         return [
             'id' => $this->id,
-            'reference' => $this->reference,
+            'reference' => $this->ref,
             'title' => $this->title,
             'price' => $suppliers
                 ->where('item_id', $this->id)
@@ -28,7 +28,7 @@ class ItemResource extends JsonResource
             'brand' => $this->brand()->first(['id', 'name']),
             'category' => $this->category()->first(['id', 'name']),
             'type' => $this->type()->first(['id', 'name']),
-            'suppliers' => $suppliers->get(['id', 'name']),
+            'suppliers' => $this->suppliers()->get(['suppliers.id', 'name', 'item_supplier.price']),
             'created' => $this->created_at,
             'deleted' => $this->deleted_at
         ];

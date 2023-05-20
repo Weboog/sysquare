@@ -23,9 +23,9 @@ class OrderSupplierResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'item' => $item->first(['id', 'reference']),
-            'price' => $item->first()->suppliers()->where('id', $this->pivot->supplier_id)->get()->pluck('pivot.price')->first(),
-            'quantity' => $item->first()->orders()->where('id', $param)->get()->pluck('pivot.quantity')->first(),
+            'item' => $item->first(['items.id', 'ref']),
+            'price' => (double) $item->first()->suppliers()->where('suppliers.id', $this->pivot->supplier_id)->get()->pluck('pivot.price')->first(),
+            'quantity' => $item->first()->orders()->where('orders.id', $param)->get()->pluck('pivot.quantity')->first(),
             'created' => $this->created_at,
             'deleted' => $this->deleted_at,
         ];
