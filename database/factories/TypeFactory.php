@@ -18,7 +18,7 @@ class TypeFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->word(),
+            'name' => fake()->unique()->word(),
             'category_id' => Category::inRandomOrder()->first()->id
         ];
     }
