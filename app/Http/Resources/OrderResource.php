@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Invoice;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -18,7 +19,8 @@ class OrderResource extends JsonResource
             'id' => $this->id,
             'serial' => $this->serial,
             'status' => $this->status,
-            'items' => ItemResource::collection($this->items),
+//            'items' => ItemResource::collection($this->items),
+//            'invoices' => $this->invoices()->get(),
             'validated' => $this->validated,
             'delivered' => $this->delivered,
             'created' => $this->created_at,

@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Brand;
+use App\Models\Category;
 use App\Models\Item;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -21,6 +22,7 @@ class ItemFactory extends Factory
 
         $brand = Brand::whereHas('categories')->inRandomOrder()->first();
         $category = $brand->categories()->whereHas('types')->inRandomOrder()->first();
+        if (!$category) $category = Category::find(1);
         $type = $category->types()->inRandomOrder()->get()->first();
 
         return [

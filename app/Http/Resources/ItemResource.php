@@ -28,7 +28,7 @@ class ItemResource extends JsonResource
             'brand' => $this->brand()->first(['id', 'name']),
             'category' => $this->category()->first(['id', 'name']),
             'type' => $this->type()->first(['id', 'name']),
-            'suppliers' => $this->suppliers()->get(['suppliers.id', 'name', 'item_supplier.price']),
+            'suppliers' => $this->suppliers()->get(['suppliers.id', 'code', 'name', 'item_supplier.price']),
             'created' => $this->created_at,
             'deleted' => $this->deleted_at
         ];

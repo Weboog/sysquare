@@ -3,6 +3,8 @@
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Brand\BrandController;
 use App\Http\Controllers\Category\CategoryController;
+use App\Http\Controllers\DNote\DNoteController;
+use App\Http\Controllers\Invoice\InvoiceController;
 use App\Http\Controllers\Item\ItemController;
 use App\Http\Controllers\LowProfileController;
 use App\Http\Controllers\Order\OrderController;
@@ -36,6 +38,9 @@ Route::middleware('auth:api')->group(function () {
     Route::get('orders/{order}/suppliers', [OrderController::class, 'suppliers']);
     Route::patch('orders/{order}/setOrderStatus', [OrderController::class, 'setOrderStatus']);
 
+    //Delivery Notes Route
+    Route::resource('dnotes', DNoteController::class);
+
     //Suppliers Routes///////////////////////////////////////////////////////////////////////////////
     Route::resource('suppliers', SupplierController::class)->except('create');
     Route::get('suppliers/{supplier}/items', [SupplierController::class, 'items']);
@@ -55,6 +60,9 @@ Route::middleware('auth:api')->group(function () {
     Route::resource('types', TypeController::class);
     Route::get('types/{type}/category', [TypeController::class, 'category']);
     Route::get('types/{type}/brands', [TypeController::class, 'brands']);
+
+    //invoices Routes/////////////////////////////////////////////////////////////////////////////////
+    Route::resource('invoices', InvoiceController::class)->except(['create', 'edit']);
 
     //Low Profile Data////////////////////////////////////////////////////////////////////////////////
     Route::prefix('lowprofile')->group(function() {

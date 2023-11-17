@@ -32,6 +32,12 @@ class Order extends Model
         return $this->belongsToMany(Item::class, 'order_item_supplier')->withPivot(['supplier_id','quantity']);
     }
 
+    public function invoices() {
+
+        return $this->hasMany(Invoice::class);
+
+    }
+
     /**
      * @param OrderStatus $status
      * @return $this

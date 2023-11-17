@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Order;
 
+use App\Enums\OrderMode;
 use App\Enums\OrderStatus;
+use App\Http\Resources\OrderDeliveryNote;
 use App\Http\Resources\OrderResource;
 use App\Models\Item;
 use App\Models\Order;
@@ -29,9 +31,13 @@ class OrderController extends Controller
 
         $orders = Order::OrderByDesc('id');
         $length = null;
+        $mode = OrderMode::MODE_DEFAULT;
 
         foreach (request()->query() as $key => $value) {
 
+            if ($key == 'mode') {
+                if (in_array($value, OrderMode::getAllValues())) $mode = $value;
+            }
 
             if ($key == 'length') {
                 $length = $value;
@@ -52,7 +58,10 @@ class OrderController extends Controller
             }
         }
 
+        if ($mode === OrderMode::MODE_DELIVERY_NOTE->value)
+            return OrderDeliveryNote::collection(($orders->paginate($length == null ? 10 : $length)->withQueryString()));
         return OrderResource::collection(($orders->paginate($length == null ? 10 : $length)->withQueryString()));
+
     }
 
     /**
@@ -62,10 +71,15 @@ class OrderController extends Controller
     {
 
         $rules = [
-            'item.*' => ['required', 'numeric', Rule::in(Item::all()->pluck('id')->toArray())],
-            'supplier.*' => ['required', 'numeric', Rule::in(Supplier::all()->pluck('id')->toArray())],
-            'quantity.*' => 'required|numeric',
+            'item' => ['required', 'array'],
+            'item.*' => ['numeric', Rule::exists('items', 'id')],
+            'supplier' => ['required', 'array'],
+            'supplier.*' => ['numeric', Rule::exists('suppliers', 'id')],
+            'quantity' => 'required|array',
+            'quantity.*' => 'numeric',
         ];
+
+
 
         $request->validate($rules);
 
@@ -75,7 +89,7 @@ class OrderController extends Controller
                 'serial' => Date::now()->format('Ym')
             ]);
 
-            $orders = [];
+            $orders = []; //[item_id => [supplier_id, quantity]]
             foreach ($request->item as $key => $value) {
                 $orders[$value] = [
                     'supplier_id' => $request->supplier[$key],
@@ -189,6 +203,10 @@ class OrderController extends Controller
 
     }
 
+    /*
+     * Special actions
+     */
+
     public function setOrderStatus(Request $request, Order $order) {
         $rule = [
             'status' => ['required', 'string', new OrderStatusRule]
@@ -196,5 +214,6 @@ class OrderController extends Controller
         $request->validate($rule);
         return new OrderResource($order->setStatus($request->status));
     }
+
 
 }
