@@ -23,6 +23,7 @@ class OrderDeliveryNoteItem extends JsonResource
             'title' => $this->title,
             'condition' => $this->condition,
             'supplier' => [...$supplier->toArray(), 'price' => (double) $supplier->getItemPrice($this->id)],
+            'orderPrice' => $this->pivot->price ?? null,
             'quantity' => $this->pivot->quantity,
         ];
     }

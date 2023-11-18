@@ -24,12 +24,12 @@ class Order extends Model
 
     public function suppliers(): BelongsToMany
     {
-        return $this->belongsToMany(Supplier::class, 'order_item_supplier')->withPivot(['item_id','quantity']);
+        return $this->belongsToMany(Supplier::class, 'order_item_supplier')->withPivot(['item_id', 'price', 'quantity']);
     }
 
     public function items(): BelongsToMany
     {
-        return $this->belongsToMany(Item::class, 'order_item_supplier')->withPivot(['supplier_id','quantity']);
+        return $this->belongsToMany(Item::class, 'order_item_supplier')->withPivot(['supplier_id', 'price', 'quantity']);
     }
 
     public function invoices() {

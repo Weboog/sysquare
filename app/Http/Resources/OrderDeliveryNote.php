@@ -15,18 +15,11 @@ class OrderDeliveryNote extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-//            'id' => $this->id,
-//            'serial' => $this->serial,
-//            'items' => OrderDeliveryNoteItem::collection($this->items),
-//            'invoices' => $this->invoices()->get(['supplier_id', 'reference', 'comment']),
-//            'created' => $this->created_at,
+
             'id' => $this->id,
             'serial' => $this->serial,
-//            'status' => $this->status,
             'items' => OrderDeliveryNoteItem::collection($this->items),
             'invoices' => $this->invoices()->get(),
-//            'validated' => $this->validated,
-//            'delivered' => $this->delivered,
             'created' => $this->created_at,
         ];
     }

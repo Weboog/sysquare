@@ -48,7 +48,12 @@ class OrderController extends Controller
             }
 
             if ($key == 'q' and $value != 'null') {
+
+                if ($position = strpos($value, '#')) {
+                    $value = substr($value, 0, $position);
+                }
                 $orders->where('serial', 'like', "%$value%");
+
             }
 
             if ($key == 'range') {
@@ -75,11 +80,11 @@ class OrderController extends Controller
             'item.*' => ['numeric', Rule::exists('items', 'id')],
             'supplier' => ['required', 'array'],
             'supplier.*' => ['numeric', Rule::exists('suppliers', 'id')],
+            'price' => ['nullable', 'array'],
+            'price.*' => 'numeric',
             'quantity' => 'required|array',
             'quantity.*' => 'numeric',
         ];
-
-
 
         $request->validate($rules);
 
@@ -93,11 +98,13 @@ class OrderController extends Controller
             foreach ($request->item as $key => $value) {
                 $orders[$value] = [
                     'supplier_id' => $request->supplier[$key],
+                    'price' => $request->price[$key] !== '0' ? $request->price[$key] : null,
                     'quantity' => $request->quantity[$key]
                 ];
             }
 
             $order->items()->attach($orders);
+            $order->refresh();
 
             return new OrderResource($order);
         });
