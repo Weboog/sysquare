@@ -45,8 +45,8 @@ class Supplier extends Model
 
     public function orderInvoices(Order $order) {
 
-        return $this->hasMany(Invoice::class)->where(function ($query) {
-            return $query->where('order_id', 428);
+        return $this->hasMany(Invoice::class)->where(function ($query) use ($order) {
+            return $query->where('order_id', $order->id);
         });
 
     }

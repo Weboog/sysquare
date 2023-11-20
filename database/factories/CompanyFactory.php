@@ -19,7 +19,7 @@ class CompanyFactory extends Factory
         return [
             'ice' => '000189568000063',
             'title' => 'Hôtel Université Mohammed VI Polytechnique Rabat',
-            'address' => null,
+            'address' => 'Rocade Salé',
             'phone' => '0530221420',
             'email' => 'um6photel@phl.ma',
             'fax' => null,

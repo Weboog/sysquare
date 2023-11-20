@@ -26,6 +26,7 @@ class OrderItem extends JsonResource
             'type' => $this->type()->first(['id', 'name']),
             'supplier' => $supplier = $this->orderSuppliers()->where('suppliers.id', $this->pivot->supplier_id)->get(['suppliers.id', 'code', 'name'])->first(),
             'price' => (double)  $supplier->getItemPrice($this->id),
+            'order_price' => (double) $this->pivot->price,
             'quantity' => $this->pivot->quantity,
             'created' => (string) $this->created_at,
             'deleted' => $this->deleted_at,

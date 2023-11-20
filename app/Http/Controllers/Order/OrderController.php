@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Order;
 
 use App\Enums\OrderMode;
 use App\Enums\OrderStatus;
+use App\Http\Resources\ItemResource;
 use App\Http\Resources\OrderDeliveryNote;
 use App\Http\Resources\OrderResource;
 use App\Models\Item;
@@ -221,7 +222,8 @@ class OrderController extends Controller
         foreach ($suppliers as $supplier) {
             if ( !array_key_exists($supplier->id, $groupedSuppliers) ) $groupedSuppliers[$supplier->id] = $this->createPurchaseOrder($order, $supplier);
         }
-        return response()->json(['group' => $groupedSuppliers]);
+
+        return response()->json(['data' => array_values($groupedSuppliers)]);
     }
 
     /*
@@ -244,17 +246,18 @@ class OrderController extends Controller
     {
         $reducedItems = [];
         foreach ($supplier->orderItems($order)->get() as $item) {
-            $reducedItems[] = $supplier->getItemPrice($item->id) * $item->pivot->quantity;;
+            $reducedItems[] = ($item->pivot->price ?? $supplier->getItemPrice($item->id)) * $item->pivot->quantity;
         }
         $calculations = array_reduce($reducedItems, function ($carry, $price) {
             return $carry + $price ?? 0;
         }, 0);
 
         return [
+            'reference' => $order->serial . '#' . $supplier->id,
             'supplier' => $supplier->sanitize(),
-            'invoice' => $supplier->orderInvoices($order)->get(),
-            'total' => $calculations,
-            'items' => $supplier->orderItems($order)->get()];
+            'invoice' => $supplier->orderInvoices($order)->get(['reference', 'comment']),
+            'total' => round($calculations, 2),
+            'items' => OrderItem::collection($supplier->orderItems($order)->get())];
     }
 
 
