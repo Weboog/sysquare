@@ -216,7 +216,7 @@ class OrderController extends Controller
         $suppliers = $order->suppliers;
         $groupedSuppliers = [];
         $first = $suppliers->first();
-        $groupedSuppliers[$first->id] = ['supplier' => $first, 'invoice' => $first->orderInvoices($order)->get(), 'items' => $first->orderItems($order)->get()];
+        $groupedSuppliers[$first->id] = $this->createPurchaseOrder($order, $first);
 
         foreach ($suppliers as $supplier) {
             if ( !array_key_exists($supplier->id, $groupedSuppliers) ) $groupedSuppliers[$supplier->id] = $this->createPurchaseOrder($order, $supplier);
@@ -242,9 +242,18 @@ class OrderController extends Controller
 
     private function createPurchaseOrder(Order $order, Supplier $supplier): array
     {
+        $reducedItems = [];
+        foreach ($supplier->orderItems($order)->get() as $item) {
+            $reducedItems[] = $supplier->getItemPrice($item->id) * $item->pivot->quantity;;
+        }
+        $calculations = array_reduce($reducedItems, function ($carry, $price) {
+            return $carry + $price ?? 0;
+        }, 0);
+
         return [
-            'supplier' => $supplier,
-            'invoice' => $supplier->invoices()->get(),
+            'supplier' => $supplier->sanitize(),
+            'invoice' => $supplier->orderInvoices($order)->get(),
+            'total' => $calculations,
             'items' => $supplier->orderItems($order)->get()];
     }
 

@@ -71,4 +71,15 @@ class Supplier extends Model
         $this->attributes['code'] = sprintf("%08x", crc32($str));
 
     }
+
+    /**
+     * Helpers
+     */
+
+    public function sanitize(): Supplier|static //Delete timestamps
+    {
+        $s = clone $this;
+        unset($s->created_at, $s->updated_at, $s->deleted_at);
+        return $s;
+    }
 }
