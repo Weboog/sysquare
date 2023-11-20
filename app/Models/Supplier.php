@@ -38,12 +38,27 @@ class Supplier extends Model
     }
 
     public function invoices() {
+
         return $this->hasMany(Invoice::class);
+
     }
 
-    public function orderItems(): BelongsToMany
+    public function orderInvoices(Order $order) {
+
+        return $this->hasMany(Invoice::class)->where(function ($query) {
+            return $query->where('order_id', 428);
+        });
+
+    }
+
+    public function orderItems(Order $order = null): BelongsToMany
     {
-        return $this->belongsToMany(Item::class, 'order_item_supplier')->withPivot(['order_id', 'quantity']);
+        if ($order) {
+            return $this->belongsToMany(Item::class, 'order_item_supplier')
+                ->wherePivot('order_id', $order->id)
+                ->withPivot([ 'quantity', 'missed', 'price' ]);
+        }
+        return $this->belongsToMany(Item::class, 'order_item_supplier')->withPivot(['quantity', 'missed', 'price']);
     }
 
     public function getItemPrice($id) {

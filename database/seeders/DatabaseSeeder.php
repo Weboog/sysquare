@@ -7,6 +7,7 @@ use App\Models\Brand;
 use App\Models\BrandCategory;
 use App\Models\Category;
 use App\Models\CategoryType;
+use App\Models\Company;
 use App\Models\Item;
 use App\Models\ItemSupplier;
 use App\Models\Order;
@@ -15,6 +16,7 @@ use App\Models\Supplier;
 use App\Models\Type;
 use App\Models\User;
 use Database\Factories\BrandFactory;
+use Database\Factories\CompanyFactory;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -35,5 +37,6 @@ class DatabaseSeeder extends Seeder
 //        ItemSupplier::factory(10)->create();
 //        Order::factory(350)->create();
 //        OrderItemSupplier::factory(2500)->create();
+        Company::factory(1)->create();
     }
 }

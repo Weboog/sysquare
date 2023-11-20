@@ -208,6 +208,20 @@ class OrderController extends Controller
         $suppliers = $order->suppliers;
         return OrderSupplierResource::collection($suppliers);
 
+
+    }
+
+    public function purchase_order(Order $order) {
+
+        $suppliers = $order->suppliers;
+        $groupedSuppliers = [];
+        $first = $suppliers->first();
+        $groupedSuppliers[$first->id] = ['supplier' => $first, 'invoice' => $first->orderInvoices($order)->get(), 'items' => $first->orderItems($order)->get()];
+
+        foreach ($suppliers as $supplier) {
+            if ( !array_key_exists($supplier->id, $groupedSuppliers) ) $groupedSuppliers[$supplier->id] = $this->createPurchaseOrder($order, $supplier);
+        }
+        return response()->json(['group' => $groupedSuppliers]);
     }
 
     /*
@@ -220,6 +234,18 @@ class OrderController extends Controller
         ];
         $request->validate($rule);
         return new OrderResource($order->setStatus($request->status));
+    }
+
+    /**
+     * Helpers
+     */
+
+    private function createPurchaseOrder(Order $order, Supplier $supplier): array
+    {
+        return [
+            'supplier' => $supplier,
+            'invoice' => $supplier->invoices()->get(),
+            'items' => $supplier->orderItems($order)->get()];
     }
 
 

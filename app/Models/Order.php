@@ -24,7 +24,7 @@ class Order extends Model
 
     public function suppliers(): BelongsToMany
     {
-        return $this->belongsToMany(Supplier::class, 'order_item_supplier')->withPivot(['item_id', 'price', 'quantity']);
+        return $this->belongsToMany(Supplier::class, 'order_item_supplier')->withPivot(['item_id', 'quantity', 'missed', 'price']);
     }
 
     public function items(): BelongsToMany

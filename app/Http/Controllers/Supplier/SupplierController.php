@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Supplier;
 
 use App\Http\Resources\OrderResource;
 use App\Http\Resources\SupplierResource;
+use App\Models\Order;
 use App\Models\Supplier;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\SupplierItemResource;
@@ -138,5 +139,11 @@ class SupplierController extends Controller
      public function orders(Supplier $supplier) {
         $orders = $supplier->orders;
         return OrderResource::collection($orders);
+     }
+
+     public function orderItems(Supplier $supplier, int $orderId = 0) {
+        $order = Order::findOrFail($orderId);
+        $items = $supplier->orderItems($order)->get();
+        return response()->json(['data' => $items]);
      }
 }

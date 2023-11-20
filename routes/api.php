@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Brand\BrandController;
 use App\Http\Controllers\Category\CategoryController;
+use App\Http\Controllers\Company\CompanyController;
 use App\Http\Controllers\DNote\DNoteController;
 use App\Http\Controllers\Invoice\InvoiceController;
 use App\Http\Controllers\Item\ItemController;
@@ -36,6 +37,7 @@ Route::middleware('auth:api')->group(function () {
     Route::resource('orders', OrderController::class)->except('create');
     Route::get('orders/{order}/items', [OrderController::class, 'items']);
     Route::get('orders/{order}/suppliers', [OrderController::class, 'suppliers']);
+    Route::get('orders/{order}/purchase_order', [OrderController::class, 'purchase_order']);
     Route::patch('orders/{order}/setOrderStatus', [OrderController::class, 'setOrderStatus']);
 
     //Delivery Notes Route
@@ -45,6 +47,7 @@ Route::middleware('auth:api')->group(function () {
     Route::resource('suppliers', SupplierController::class)->except('create');
     Route::get('suppliers/{supplier}/items', [SupplierController::class, 'items']);
     Route::get('suppliers/{supplier}/orders', [SupplierController::class, 'orders']);
+    Route::get('suppliers/{supplier}/order_items/{order}', [SupplierController::class, 'orderItems']);
 
     //Brands Routes///////////////////////////////////////////////////////////////////////////////////
     Route::resource('brands', BrandController::class)->except('create');
@@ -63,6 +66,9 @@ Route::middleware('auth:api')->group(function () {
 
     //invoices Routes/////////////////////////////////////////////////////////////////////////////////
     Route::resource('invoices', InvoiceController::class)->except(['create', 'edit']);
+
+    //Companies Routes////////////////////////////////////////////////////////////////////////////////
+    Route::resource('companies', CompanyController::class);
 
     //Low Profile Data////////////////////////////////////////////////////////////////////////////////
     Route::prefix('lowprofile')->group(function() {

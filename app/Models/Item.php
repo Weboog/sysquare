@@ -24,7 +24,7 @@ class Item extends Model
         'type_id'
     ];
 
-    protected $hidden = ['pivot'];
+//    protected $hidden = ['pivot'];
 
     protected $casts = [
         'id' => 'integer',
