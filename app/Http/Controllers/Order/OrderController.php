@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Order;
 
 use App\Enums\OrderMode;
 use App\Enums\OrderStatus;
+use App\Http\Resources\InvoiceResource;
 use App\Http\Resources\ItemResource;
 use App\Http\Resources\OrderDeliveryNote;
+use App\Http\Resources\OrderInvoiceResource;
 use App\Http\Resources\OrderResource;
 use App\Models\Item;
 use App\Models\Order;
@@ -15,6 +17,7 @@ use App\Http\Resources\OrderSupplierResource;
 use App\Models\Supplier;
 use App\Rules\OrderStatusRule;
 use App\Traits\Filters;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -179,9 +182,6 @@ class OrderController extends Controller
             return new OrderResource($order);
         });
 
-
-
-
     }
 
     /**
@@ -209,21 +209,19 @@ class OrderController extends Controller
         $suppliers = $order->suppliers;
         return OrderSupplierResource::collection($suppliers);
 
+    }
+
+    public function invoices(Order $order) {
+
+        $invoices = $order->invoices;
+        return InvoiceResource::collection($invoices);
 
     }
 
-    public function purchase_order(Order $order) {
+    public function purchase_order(Order $order): JsonResponse
+    {
+        return $order->generatePurchaseOrders();
 
-        $suppliers = $order->suppliers;
-        $groupedSuppliers = [];
-        $first = $suppliers->first();
-        $groupedSuppliers[$first->id] = $this->createPurchaseOrder($order, $first);
-
-        foreach ($suppliers as $supplier) {
-            if ( !array_key_exists($supplier->id, $groupedSuppliers) ) $groupedSuppliers[$supplier->id] = $this->createPurchaseOrder($order, $supplier);
-        }
-
-        return response()->json(['data' => array_values($groupedSuppliers)]);
     }
 
     /*
@@ -238,27 +236,7 @@ class OrderController extends Controller
         return new OrderResource($order->setStatus($request->status));
     }
 
-    /**
-     * Helpers
-     */
 
-    private function createPurchaseOrder(Order $order, Supplier $supplier): array
-    {
-        $reducedItems = [];
-        foreach ($supplier->orderItems($order)->get() as $item) {
-            $reducedItems[] = ($item->pivot->price ?? $supplier->getItemPrice($item->id)) * $item->pivot->quantity;
-        }
-        $calculations = array_reduce($reducedItems, function ($carry, $price) {
-            return $carry + $price ?? 0;
-        }, 0);
-
-        return [
-            'reference' => $order->serial . '#' . $supplier->id,
-            'supplier' => $supplier->sanitize(),
-            'invoice' => $supplier->orderInvoices($order)->get(['reference', 'comment']),
-            'total' => round($calculations, 2),
-            'items' => OrderItem::collection($supplier->orderItems($order)->get())];
-    }
 
 
 }

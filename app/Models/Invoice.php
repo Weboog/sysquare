@@ -28,4 +28,5 @@ class Invoice extends Model
     {
         return $this->belongsTo(Supplier::class);
     }
+
 }

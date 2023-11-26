@@ -28,6 +28,7 @@ class OrderItem extends JsonResource
             'price' => (double)  $supplier->getItemPrice($this->id),
             'order_price' => (double) $this->pivot->price,
             'quantity' => $this->pivot->quantity,
+            'missed' => $this->pivot->missed,
             'created' => (string) $this->created_at,
             'deleted' => $this->deleted_at,
         ];

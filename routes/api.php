@@ -37,8 +37,12 @@ Route::middleware('auth:api')->group(function () {
     Route::resource('orders', OrderController::class)->except('create');
     Route::get('orders/{order}/items', [OrderController::class, 'items']);
     Route::get('orders/{order}/suppliers', [OrderController::class, 'suppliers']);
-    Route::get('orders/{order}/purchase_order', [OrderController::class, 'purchase_order']);
-    Route::patch('orders/{order}/setOrderStatus', [OrderController::class, 'setOrderStatus']);
+    Route::get('orders/{order}/purchases', [OrderController::class, 'purchase_order']);
+    Route::get('orders/{order}/invoices', [OrderController::class, 'invoices']);
+    Route::patch('orders/{order}/setProperty', [OrderController::class, 'setOrderStatus']);
+//    Route::prefix('purchase_orders')->group(function () {
+//        Route::get('list', [OrderController::class, 'purchase_orders']);
+//    });
 
     //Delivery Notes Route
     Route::resource('dnotes', DNoteController::class);
@@ -66,6 +70,9 @@ Route::middleware('auth:api')->group(function () {
 
     //invoices Routes/////////////////////////////////////////////////////////////////////////////////
     Route::resource('invoices', InvoiceController::class)->except(['create', 'edit']);
+    Route::prefix('invoices')->group(function () {
+        Route::get('order/{order}', [InvoiceController::class, 'inOrder']);
+    });
 
     //Companies Routes////////////////////////////////////////////////////////////////////////////////
     Route::resource('companies', CompanyController::class);

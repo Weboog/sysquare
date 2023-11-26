@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Invoice;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\InvoiceResource;
 use App\Models\Invoice;
 use App\Models\Order;
 use App\Models\Supplier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Validation\Rule;
 
 class InvoiceController extends Controller
@@ -18,7 +20,7 @@ class InvoiceController extends Controller
     public function index()
     {
         $invoices = Invoice::all();
-        return response()->json(['data' => $invoices]);
+        return InvoiceResource::collection($invoices);
     }
 
 
@@ -26,7 +28,7 @@ class InvoiceController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request): JsonResponse
+    public function store(Request $request): InvoiceResource
     {
 
         $rules = [
@@ -40,7 +42,7 @@ class InvoiceController extends Controller
 
         $invoice = Invoice::create($request->all());
 
-        return response()->json($invoice);
+        return new InvoiceResource($invoice);
 
     }
 
@@ -49,7 +51,8 @@ class InvoiceController extends Controller
      */
     public function show(Invoice $invoice)
     {
-        //
+
+
     }
 
     /**
@@ -65,6 +68,24 @@ class InvoiceController extends Controller
      */
     public function destroy(Invoice $invoice)
     {
-        //
+
+        $result = $invoice->forceDelete();
+        if (!$result) return response()->json(['error' => 'ERROR_OCCURS'], 404);
+
+        return new InvoiceResource($invoice);
+
     }
+
+    /**
+     * Relationships////////////////////////////////////////////////
+     */
+
+    public function inOrder(int $orderId): AnonymousResourceCollection
+    {
+
+        $invoices = Invoice::where('order_id', 428)->get();
+        return InvoiceResource::collection($invoices);
+
+    }
+
 }
