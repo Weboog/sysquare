@@ -60,7 +60,24 @@ class InvoiceController extends Controller
      */
     public function update(Request $request, Invoice $invoice)
     {
-        //
+        $rules = [
+            'number' => ['required', 'string'],
+            'comment' => ['nullable', 'string'],
+        ];
+
+        $request->validate($rules);
+
+        return response()->json([
+            'invoice' => $invoice,
+            'request' => $request->all()
+        ]);
+
+        $invoice->reference = $request->number;
+        if($request->comment) $invoice->comment = $request->comment;
+
+        $invoice->save();
+
+        return new InvoiceResource($invoice);
     }
 
     /**

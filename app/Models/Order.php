@@ -54,6 +54,12 @@ class Order extends Model
 
     }
 
+    public function generatePurchaseOrder(Supplier $supplier) {
+        return response()->json([
+            'data' => [$this->createPurchaseOrder($this, $supplier, true)],
+        ]);
+    }
+
     /**
      * @param OrderStatus $status
      * @return $this

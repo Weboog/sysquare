@@ -218,10 +218,14 @@ class OrderController extends Controller
 
     }
 
-    public function purchase_order(Order $order): JsonResponse
+    public function purchases(Order $order): JsonResponse
     {
         return $order->generatePurchaseOrders();
 
+    }
+
+    public function purchase(string $ref, Order $order) {
+        return $order->generatePurchaseOrder(Supplier::find($ref));
     }
 
     /*

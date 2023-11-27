@@ -37,15 +37,14 @@ Route::middleware('auth:api')->group(function () {
     Route::resource('orders', OrderController::class)->except('create');
     Route::get('orders/{order}/items', [OrderController::class, 'items']);
     Route::get('orders/{order}/suppliers', [OrderController::class, 'suppliers']);
-    Route::get('orders/{order}/purchases', [OrderController::class, 'purchase_order']);
+    Route::get('orders/{order}/purchases', [OrderController::class, 'purchases']);
+    Route::get('orders/{order}/purchases/{reference}', [OrderController::class, 'purchase']);
+    Route::prefix('purchases')->group(function() {
+        Route::get('{reference}/orders/{order}', [OrderController::class, 'purchase']);
+        Route::get('orders/{order}', [OrderController::class, 'purchases']);
+    });
     Route::get('orders/{order}/invoices', [OrderController::class, 'invoices']);
     Route::patch('orders/{order}/setProperty', [OrderController::class, 'setOrderStatus']);
-//    Route::prefix('purchase_orders')->group(function () {
-//        Route::get('list', [OrderController::class, 'purchase_orders']);
-//    });
-
-    //Delivery Notes Route
-    Route::resource('dnotes', DNoteController::class);
 
     //Suppliers Routes///////////////////////////////////////////////////////////////////////////////
     Route::resource('suppliers', SupplierController::class)->except('create');
