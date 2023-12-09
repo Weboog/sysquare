@@ -59,6 +59,12 @@ class Item extends Model
         return $this->belongsToMany(Order::class, 'order_item_supplier')->withPivot(['quantity', 'missed']);
     }
 
+    public function missing() {
+
+        return $this->hasOne(Missing::class, 'item_id');
+
+    }
+
     public function orderSuppliers(): BelongsToMany
     {
         return $this->belongsToMany(Supplier::class, 'order_item_supplier')->withPivot(['quantity', 'missed']);

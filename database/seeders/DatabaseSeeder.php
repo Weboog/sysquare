@@ -33,7 +33,7 @@ class DatabaseSeeder extends Seeder
     //    CategoryType::factory(31)->create(); //Do not seed this factory since the type table already has cotegory_id key
 //        BrandCategory::factory(50)->create();
 //        Supplier::factory(50)->create();
-//       Item::factory(240)->create();
+//       Item::factory(1)->create();
 //        ItemSupplier::factory(10)->create();
 //        Order::factory(350)->create();
 //        OrderItemSupplier::factory(2500)->create();

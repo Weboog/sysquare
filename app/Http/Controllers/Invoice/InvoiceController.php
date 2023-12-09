@@ -61,23 +61,22 @@ class InvoiceController extends Controller
     public function update(Request $request, Invoice $invoice)
     {
         $rules = [
-            'number' => ['required', 'string'],
+            'number' => ['nullable', 'string'],
             'comment' => ['nullable', 'string'],
         ];
 
         $request->validate($rules);
 
-        return response()->json([
-            'invoice' => $invoice,
-            'request' => $request->all()
-        ]);
+         if ($request->number) $invoice->reference = $request->number;
+        $invoice->comment = $request->comment;
 
-        $invoice->reference = $request->number;
-        if($request->comment) $invoice->comment = $request->comment;
+        if ($invoice->save()) {
+            $invoice->refresh();
+            return new InvoiceResource($invoice);
+        }
 
-        $invoice->save();
+        return response()->json(['error' => 'CANNOT_UPDATE'], 402);
 
-        return new InvoiceResource($invoice);
     }
 
     /**

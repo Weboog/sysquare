@@ -31,7 +31,7 @@ class ItemController extends Controller
     public function __construct()
     {
         $this->middleware('parse.array:suppliers')->only('store');
-        $this->middleware('parse.array:prices')->only('store');   
+        $this->middleware('parse.array:prices')->only('store');
     }
     /**
      * Display a listing of the resource.
@@ -72,8 +72,8 @@ class ItemController extends Controller
             //Search
             if ($key == 'q' and $value != 'null') {
                 $items
-                ->where(DB::raw('lower(title)'), 'like', strtolower("%$value%"))
-                ->orWhere(DB::raw('lower(ref)'), 'like', strtolower("%$value%"));
+                ->where(DB::raw('lower(title)'), 'ilike', strtolower("%$value%"))
+                ->orWhere(DB::raw('lower(ref)'), 'ilike', strtolower("%$value%"));
             }
         }
 
@@ -156,7 +156,7 @@ class ItemController extends Controller
         ];
 
         $request->validate($rules);
-        
+
         return DB::transaction(function() use ($item, $request) {
 
             $item->title = $request->title;
@@ -187,7 +187,7 @@ class ItemController extends Controller
             return new ItemResource($item);
         });
 
-        
+
     }
 
     /**

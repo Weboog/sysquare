@@ -38,7 +38,7 @@ class BrandController extends Controller
             }
 
             $this->parseQuery('q', function($value) use ($brands) {
-                $brands->where('name', 'like', "%$value%");
+                $brands->where('name', 'ilike', "%$value%");
             });
 
         }

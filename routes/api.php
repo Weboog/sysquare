@@ -8,6 +8,7 @@ use App\Http\Controllers\DNote\DNoteController;
 use App\Http\Controllers\Invoice\InvoiceController;
 use App\Http\Controllers\Item\ItemController;
 use App\Http\Controllers\LowProfileController;
+use App\Http\Controllers\Missing\MissingController;
 use App\Http\Controllers\Order\OrderController;
 use App\Http\Controllers\Summary\SummaryController;
 use App\Http\Controllers\Supplier\SupplierController;
@@ -33,18 +34,26 @@ Route::middleware('auth:api')->group(function () {
     Route::get('items/{item}/orders', [ItemController::class, 'orders']);
     Route::get('items/{item}/orderSuppliers', [ItemController::class, 'orderSuppliers']);
 
+    //Missing////////////////////////////////////////////////////////////////////////////////////////
+    Route::resource('missings', MissingController::class)->only('index');
+
     //Orders Routes//////////////////////////////////////////////////////////////////////////////////
     Route::resource('orders', OrderController::class)->except('create');
     Route::get('orders/{order}/items', [OrderController::class, 'items']);
     Route::get('orders/{order}/suppliers', [OrderController::class, 'suppliers']);
     Route::get('orders/{order}/purchases', [OrderController::class, 'purchases']);
     Route::get('orders/{order}/purchases/{reference}', [OrderController::class, 'purchase']);
+    Route::get('orders/{order}/invoices', [OrderController::class, 'invoices']);
+    Route::patch('orders/{order}/setProperty', [OrderController::class, 'setOrderStatus']);
+    Route::patch('orders/{order}/setPivotProperty', [OrderController::class, 'setPivotProperty']);
+    Route::prefix('missed')->group(function(){
+        Route::get('items', [OrderController::class, 'missedItems']);
+        Route::patch('items', [OrderController::class, 'setAllPivotProperty']);
+    });
     Route::prefix('purchases')->group(function() {
         Route::get('{reference}/orders/{order}', [OrderController::class, 'purchase']);
         Route::get('orders/{order}', [OrderController::class, 'purchases']);
     });
-    Route::get('orders/{order}/invoices', [OrderController::class, 'invoices']);
-    Route::patch('orders/{order}/setProperty', [OrderController::class, 'setOrderStatus']);
 
     //Suppliers Routes///////////////////////////////////////////////////////////////////////////////
     Route::resource('suppliers', SupplierController::class)->except('create');

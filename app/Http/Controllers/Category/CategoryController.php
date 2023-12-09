@@ -36,13 +36,13 @@ class CategoryController extends Controller
             }
 
             $this->parseQuery('q', function ($value) use ($categories) {
-                $categories->where('name', 'like', "%$value%");
+                $categories->where('name', 'ilike', "%$value%");
             });
         }
 
-        return CategoryResource::collection( 
-            $paginate 
-            ? $categories->paginate($length == null ? 10 : $length)->withQueryString() 
+        return CategoryResource::collection(
+            $paginate
+            ? $categories->paginate($length == null ? 10 : $length)->withQueryString()
             : $categories->get()
         );
     }

@@ -7,9 +7,9 @@ use App\Enums\OrderStatus;
 use App\Http\Resources\InvoiceResource;
 use App\Http\Resources\ItemResource;
 use App\Http\Resources\OrderDeliveryNote;
-use App\Http\Resources\OrderInvoiceResource;
 use App\Http\Resources\OrderResource;
 use App\Models\Item;
+use App\Models\Missing;
 use App\Models\Order;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\OrderItem;
@@ -56,7 +56,7 @@ class OrderController extends Controller
                 if ($position = strpos($value, '#')) {
                     $value = substr($value, 0, $position);
                 }
-                $orders->where('serial', 'like', "%$value%");
+                $orders->where('serial', 'ilike', "%$value%");
 
             }
 
@@ -204,6 +204,14 @@ class OrderController extends Controller
 
     }
 
+    public function missedItems() {
+        $missingIds = Missing::all()->pluck('item_id');
+        $missed = Order::with(['items' => function($q) use ($missingIds) {
+            $q->where('missed', true)->whereIn('item_id', $missingIds);
+        }])->get()->pluck('items')->flatten()->unique('id');
+        return ItemResource::collection($missed);
+    }
+
     public function suppliers(Order $order) {
 
         $suppliers = $order->suppliers;
@@ -238,6 +246,38 @@ class OrderController extends Controller
         ];
         $request->validate($rule);
         return new OrderResource($order->setStatus($request->status));
+    }
+
+    public function setPivotProperty(Request $request, Order $order)
+    {
+
+        $preparedArray = [];
+
+        for ( $k = 0; $k < count($request->properties); $k++ ) {
+            $a = [];
+            for ($i = 0; $i < count($request->properties[$k]); $i++) {
+                $a[$request->properties[$k][$i]] = $request->values[$k][$i];
+            }
+            $preparedArray['pivot'][] = $a;
+        }
+
+        if ($request->supplier_item) $preparedArray['supplier_item'] = $request->supplier_item;
+        if ($request->supplier_id) $preparedArray['supplier_id'] = $request->supplier_id;
+        if ($request->supplier_price) $preparedArray['supplier_price'] = $request->supplier_price;
+
+        $result = $order->setProperty($request->ids, $preparedArray);
+        return $result
+            ? new OrderResource($order->refresh())
+            : response()->json($result, 402);
+    }
+
+    public function setAllPivotProperty(Request $request): void {
+
+        $orderIds = $request->orderIds;
+        foreach ($orderIds as $orderId) {
+            $order = Order::find($orderId);
+            $this->setPivotProperty($request, $order);
+        }
     }
 
 

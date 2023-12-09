@@ -36,10 +36,10 @@ class SupplierController extends Controller
 
             if ($key == 'q' and $value != 'null') {
                 $suppliers
-                ->where(DB::raw('lower(name)'), 'like', strtolower("%$value%"))
-                ->orWhere('code', 'like', "%$value%")
-                ->orWhere(DB::raw('lower(email)'), 'like', strtolower("%$value%"))
-                ->orWhere('phone', 'like', "%$value%");
+                ->where(DB::raw('lower(name)'), 'ilike', strtolower("%$value%"))
+                ->orWhere('code', 'ilike', "%$value%")
+                ->orWhere(DB::raw('lower(email)'), 'ilike', strtolower("%$value%"))
+                ->orWhere('phone', 'ilike', "%$value%");
             }
         }
 

@@ -28,8 +28,9 @@ trait Helper {
             'reference' => $order->serial . '#' . $supplier->id,
             'supplier' => $supplier->sanitize(),
             'invoices' => $supplier->orderInvoices($order)->get(),
+            'invoiceCount' => $supplier->orderInvoices($order)->count(),
             'total' => round($calculations, 2),
-            'items' => OrderItem::collection($supplier->orderItems($order)->get()),
+            'items' => OrderItem::collection($supplier->orderItems($order)->orderBy('title')->get()),
             'created' => (string) $order->created_at
         ];
     }

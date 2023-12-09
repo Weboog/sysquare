@@ -2,11 +2,13 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Supplier;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class ItemResource extends JsonResource
 {
+
     /**
      * Transform the resource into an array.
      *
@@ -14,8 +16,14 @@ class ItemResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $orderSupplier = null;
+        if ($this->pivot) {
+            $orderSupplier = Supplier::find($this->pivot->supplier_id);
+        }
         $suppliers = $this->suppliers();
         return [
+            'orderId' => $this->pivot->order_id ?? null,
+            'orderSupplier' =>  $orderSupplier,
             'id' => $this->id,
             'reference' => $this->ref,
             'title' => $this->title,
