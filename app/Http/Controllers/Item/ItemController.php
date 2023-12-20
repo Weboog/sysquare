@@ -36,12 +36,13 @@ class ItemController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): AnonymousResourceCollection
+    public function index()//: AnonymousResourceCollection
     {
         $items = Item::OrderByDesc('id');
         $length = null;
 
         foreach (request()->query() as $key => $value) {
+
 
             if ($key == 'length') {
                 $length = $value;

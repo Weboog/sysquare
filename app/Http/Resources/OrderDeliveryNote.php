@@ -2,6 +2,8 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Item;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -20,7 +22,7 @@ class OrderDeliveryNote extends JsonResource
             'serial' => $this->serial,
             'items' => OrderDeliveryNoteItem::collection($this->items),
             'invoices' => $this->invoices()->get(),
-            'created' => $this->created_at,
+            'created' => $this->created_at
         ];
     }
 

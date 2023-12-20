@@ -68,7 +68,9 @@ class OrderController extends Controller
         }
 
         if ($mode === OrderMode::MODE_DELIVERY_NOTE->value)
-            return OrderDeliveryNote::collection(($orders->paginate($length == null ? 10 : $length)->withQueryString()));
+            return $length
+                    ? OrderDeliveryNote::collection($orders->paginate($length))
+                    : OrderDeliveryNote::collection($orders->get());
         return OrderResource::collection(($orders->paginate($length == null ? 10 : $length)->withQueryString()));
 
     }
