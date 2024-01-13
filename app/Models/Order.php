@@ -120,6 +120,11 @@ class Order extends Model
         return $query->where('status', '=', OrderStatus::REJECTED);
     }
 
+    public function scopeNotRejected($query)
+    {
+        return $query->where('status', '<>', OrderStatus::REJECTED);
+    }
+
     public function scopeDelivering($query)
     {
         return $query->where('status', '=', OrderStatus::DELIVERING);

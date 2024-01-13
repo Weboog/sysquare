@@ -20,7 +20,7 @@ class SupplierResource extends JsonResource
             'name' => $this->name,
             'phone' => $this->phone,
             'email' => $this->email,
-            'items' => ItemResource::collection($this->items),
+//            'items' => ItemResource::collection($this->items),
             'address' => $this->address,
             'created' => $this->created_at,
             'deleted' => $this->deleted_at,

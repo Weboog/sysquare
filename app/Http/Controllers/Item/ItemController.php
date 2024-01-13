@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Item;
 
+use App\Enums\ItemMode;
+use App\Http\Resources\ItemComparison;
 use App\Http\Resources\ItemResource;
 use App\Http\Resources\OrderResource;
 use App\Http\Resources\SupplierResource;
@@ -40,9 +42,15 @@ class ItemController extends Controller
     {
         $items = Item::OrderByDesc('id');
         $length = null;
+        $mode = ItemMode::DEFAULT->value;
 
         foreach (request()->query() as $key => $value) {
 
+            if ($key == 'mode') {
+                if (in_array($value, ItemMode::getAllValues())) {
+                    $mode = $value;
+                }
+            }
 
             if ($key == 'length') {
                 $length = $value;
@@ -70,6 +78,13 @@ class ItemController extends Controller
                 $items->where('type_id', $value);
             }
 
+            if($key === 'suppliers') {
+                $ids = explode('-', $value);
+                $items->whereHas('suppliers', function ($query) use ($ids) {
+                    return $query->whereIn('suppliers.id', $ids);
+                });
+            }
+
             //Search
             if ($key == 'q' and $value != 'null') {
                 $items
@@ -78,7 +93,12 @@ class ItemController extends Controller
             }
         }
 
-        return ItemResource::collection($items->paginate($length == null ? 10 : $length)->withQueryString());
+        return match ($mode) {
+            ItemMode::COMPARISON->value => ItemComparison::collection($items->whereHas('suppliers')->paginate($length == null ? 10 : $length)->withQueryString()),
+            default => ItemResource::collection($items->paginate($length == null ? 10 : $length)->withQueryString())
+        };
+
+//        return ItemResource::collection($items->paginate($length == null ? 10 : $length)->withQueryString());
     }
 
 

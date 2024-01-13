@@ -3,7 +3,6 @@
 namespace App\Traits;
 
 use Carbon\Carbon;
-use Nette\Utils\ArrayList;
 
 trait Filters {
 
@@ -29,7 +28,7 @@ trait Filters {
         $foramttedStartDate = $startArr[2] . '-' . $startArr[1] . '-' . $startArr[0] . ' ' . $startArr[3] . ':' . $startArr[4];
         $foramttedEndDate = $endArr[2] . '-' . $endArr[1] . '-' . $endArr[0] . ' ' . $endArr[3] . ':' . $endArr[4];
 
-        return $closure(array($foramttedStartDate, $foramttedEndDate));
+        return $closure(array($foramttedStartDate, Carbon::parse($foramttedEndDate)->addDay()));
     }
 
 }

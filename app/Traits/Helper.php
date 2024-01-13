@@ -3,6 +3,7 @@ namespace App\Traits;
 use App\Http\Resources\OrderItem;
 use App\Models\Order;
 use App\Models\Supplier;
+use Illuminate\Database\Eloquent\Model;
 
 trait Helper {
 
@@ -33,6 +34,45 @@ trait Helper {
             'items' => OrderItem::collection($supplier->orderItems($order)->orderBy('title')->get()),
             'created' => (string) $order->created_at
         ];
+    }
+
+    public function sanitize(Model $model): Model
+    {
+        $clone = clone($model);
+        unset($clone->created_at);
+        unset($clone->updated_at);
+        unset($clone->deleted_at);
+        return $clone;
+    }
+
+    public function calculateTotalAmount(Order $order): array
+    {
+        $arr = [];
+        $items = $order->items;
+        $arr['count_items'] = $order->items()->count();
+        foreach ($items as $item) {
+            //Exclude Missed items
+            if ($item->pivot->missed) {
+                $arr['total'][] = 0;
+                continue;
+            }
+            $pivot = $item->pivot;
+
+            $sp = $item->suppliers()->where('suppliers.id', $pivot->supplier_id)->first();
+
+            $sp
+            ? $price = $sp->pivot->price
+            : $price = $pivot->price;
+
+            $itemTotal = round(($pivot->quantity * (double) $price), 2);
+
+            $arr['total'][] = $itemTotal;
+        }
+
+        $arr['total'] = array_reduce($arr['total'], function ($c, $t) { return $c + $t; });
+
+        return $arr;
+
     }
 
 }

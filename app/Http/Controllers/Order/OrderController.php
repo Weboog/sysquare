@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Order;
 
 use App\Enums\OrderMode;
 use App\Enums\OrderStatus;
+use App\Http\Resources\InventoryPurchase;
 use App\Http\Resources\InvoiceResource;
 use App\Http\Resources\ItemResource;
 use App\Http\Resources\OrderDeliveryNote;
@@ -35,7 +36,7 @@ class OrderController extends Controller
 
         $orders = Order::OrderByDesc('id');
         $length = null;
-        $mode = OrderMode::MODE_DEFAULT;
+        $mode = OrderMode::MODE_DEFAULT->value;
 
         foreach (request()->query() as $key => $value) {
 
@@ -67,11 +68,28 @@ class OrderController extends Controller
             }
         }
 
-        if ($mode === OrderMode::MODE_DELIVERY_NOTE->value)
-            return $length
-                    ? OrderDeliveryNote::collection($orders->paginate($length))
-                    : OrderDeliveryNote::collection($orders->get());
-        return OrderResource::collection(($orders->paginate($length == null ? 10 : $length)->withQueryString()));
+        return match ($mode) {
+          OrderMode::MODE_DELIVERY_NOTE->value => $length
+              ? OrderDeliveryNote::collection($orders->paginate($length))
+              : OrderDeliveryNote::collection($orders->get()),
+          OrderMode::MODE_INVENTORY_PURCHASE->value => InventoryPurchase::collection($orders->notRejected()->get()),
+          default => OrderResource::collection(($orders->paginate($length == null ? 10 : $length)->withQueryString()))
+        };
+//        if ($mode === OrderMode::MODE_DELIVERY_NOTE->value) {
+//
+//            return $length
+//                ? OrderDeliveryNote::collection($orders->paginate($length))
+//                : OrderDeliveryNote::collection($orders->get());
+//
+//        } elseif ($mode === OrderMode::MODE_INVENTORY_PURCHASE->value) {
+//
+//            return InventoryPurchase::collection($orders->paginate(10)->withQueryString());
+//
+//        } else {
+//
+//            return OrderResource::collection(($orders->paginate($length == null ? 10 : $length)->withQueryString()));
+//
+//        }
 
     }
 
