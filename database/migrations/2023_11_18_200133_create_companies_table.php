@@ -19,6 +19,8 @@ return new class extends Migration
             $table->string('phone');
             $table->string('fax')->nullable();
             $table->string('email')->nullable();
+            $table->string('logo');
+            $table->json('colors');
             $table->timestamps();
         });
     }

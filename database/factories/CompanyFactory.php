@@ -23,6 +23,8 @@ class CompanyFactory extends Factory
             'phone' => '0530221420',
             'email' => 'um6photel@phl.ma',
             'fax' => null,
+            'logo' => 'logo.png',
+            'colors' => '{ "primary": "rgba(220, 20, 60, 1)", "secondary": "rgba(220, 20, 60, 0.3)" }'
         ];
     }
 }
