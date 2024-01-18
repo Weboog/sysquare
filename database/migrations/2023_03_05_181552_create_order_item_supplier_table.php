@@ -17,7 +17,7 @@ return new class extends Migration
             $table->unsignedBigInteger('order_id');
             $table->unsignedBigInteger('item_id');
             $table->unsignedBigInteger('supplier_id');
-            $table->integer('quantity');
+            $table->double('quantity');
             $table->double('price')->nullable();
             $table->boolean('missed')->default(false);
 

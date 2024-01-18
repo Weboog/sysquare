@@ -112,7 +112,7 @@ class ItemController extends Controller
             'condition' => 'required|string',
             'brand' => ['required', 'numeric', Rule::exists('brands', 'id')],
             'category' => ['required', 'numeric', Rule::exists('categories', 'id')],
-            'type' => ['required', 'numeric', Rule::exists('types', 'id')],
+//            'type' => ['required', 'numeric', Rule::exists('types', 'id')],
             'suppliers' => 'array',
             'suppliers.*' => ['numeric', Rule::exists('suppliers', 'id')],
             'prices' => ['required_if:suppliers,array', 'array'],
@@ -128,7 +128,7 @@ class ItemController extends Controller
                 'condition' => $request->condition,
                 'brand_id' => $request->brand,
                 'category_id' => $request->category,
-                'type_id' => $request->type,
+                'type_id' => 1 ,//$request->type,
                 'ref' => [$request->brand, $request->category, $request->type, $request->title]
             ]);
 
@@ -169,7 +169,7 @@ class ItemController extends Controller
             'condition' => 'required|string',
             'brand' => ['required', 'numeric', Rule::exists('brands', 'id')],
             'category' => ['required', 'numeric', Rule::exists('categories', 'id')],
-            'type' => ['required', 'numeric', Rule::exists('types', 'id')],
+//            'type' => ['required', 'numeric', Rule::exists('types', 'id')],
             'suppliers' => 'array',
             'suppliers.*' => ['numeric', Rule::exists('suppliers', 'id')],
             'prices' => ['required_if:suppliers,array', 'array'],
@@ -184,7 +184,7 @@ class ItemController extends Controller
             $item->condition = $request->condition;
             $item->brand_id = $request->brand;
             $item->category_id = $request->category;
-            $item->type_id = $request->type;
+//            $item->type_id = $request->type;
 
             if ($item->isClean() && !$request->has('suppliers')) {
                 return response()->json(['message' => 'NOTHING_CHANGED'], 400);
