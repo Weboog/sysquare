@@ -19,9 +19,10 @@ return new class extends Migration
             $table->string('phone');
             $table->string('fax')->nullable();
             $table->string('email')->nullable();
-            $table->string('logo');
+            $table->string('logo')->nullable();
             $table->json('colors');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

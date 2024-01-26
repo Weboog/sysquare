@@ -46,6 +46,8 @@ Route::middleware('auth:api')->group(function () {
     Route::get('orders/{order}/invoices', [OrderController::class, 'invoices']);
     Route::patch('orders/{order}/setProperty', [OrderController::class, 'setOrderStatus']);
     Route::patch('orders/{order}/setPivotProperty', [OrderController::class, 'setPivotProperty']);
+    Route::patch('orders/{order}/addItems', [OrderController::class, 'addItems']);
+    Route::delete('orders/{order}/items', [OrderController::class, 'deleteItems']);
     Route::prefix('missed')->group(function(){
         Route::get('items', [OrderController::class, 'missedItems']);
         Route::patch('items', [OrderController::class, 'setAllPivotProperty']);
@@ -84,6 +86,7 @@ Route::middleware('auth:api')->group(function () {
 
     //Companies Routes////////////////////////////////////////////////////////////////////////////////
     Route::resource('companies', CompanyController::class);
+    Route::post('companies/{id}', [CompanyController::class, 'updateLogo']);
 
     //Low Profile Data////////////////////////////////////////////////////////////////////////////////
     Route::prefix('lowprofile')->group(function() {

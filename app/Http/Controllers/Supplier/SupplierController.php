@@ -59,7 +59,7 @@ class SupplierController extends Controller
 
         $rules = [
             'name' => 'required|string',
-            'phone' => ['required', 'string', 'regex:/^((\+(?!0)[\d]{1,3})|0)[5-7]{1}([0-9]{2}){4}$/i'],
+            'phone' => ['required', 'string', 'regex:/^((\+(?!0)[\d]{1,3})|0)[5-7]{1}(\s)?([0-9]{2}(\s)?){4}$/'],
             'email' => 'required|email',
             'address' => 'required|string'
         ];

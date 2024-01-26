@@ -5,7 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class CompanyResource extends JsonResource
+class LowProfileCompanyResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -16,15 +16,8 @@ class CompanyResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'ice' => $this->ice,
+//            'ice' => $this->ice,
             'title' => $this->title,
-            'address' => $this->address,
-            'phone' => $this->phone,
-            'email' => $this->email,
-            'fax' => $this->fax,
-            'logo' => asset($this->logo),
-            'colors' =>  json_decode($this->colors) ,
-            'created' => $this->created_at
         ];
     }
 }

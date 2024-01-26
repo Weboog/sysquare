@@ -18,6 +18,7 @@ use App\Http\Resources\OrderSupplierResource;
 use App\Models\Supplier;
 use App\Rules\OrderStatusRule;
 use App\Traits\Filters;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
@@ -259,6 +260,68 @@ class OrderController extends Controller
     /*
      * Special actions
      */
+
+    public function deleteItems(Request $request, Order $order)
+    {
+
+//        return response()->json();
+
+        $rules = [
+            'items' => ['required', 'array'],
+            'items.*' => ['required', 'integer', Rule::exists('items', 'id')],
+            'supplier' => ['required', 'integer', Rule::exists('suppliers', 'id')],
+        ];
+        $request->validate($rules);
+
+        $result = $order->items()
+            ->wherePivot('supplier_id', $request->get('supplier'))
+            ->detach($request->get('items'));
+        return response()->json(['deleted' => (bool) $result, 'purged' => (bool) $order->refresh()->deleted_at], $result ? 200 : 400);
+    }
+
+    public function addItems(Request $request, Order $order): JsonResponse
+    {
+
+        $rules = [
+            'item_id' => ['required', 'array'],
+            'item_id.*' => ['required', 'integer', Rule::exists('items', 'id')],
+            'supplier_id' => ['required', 'integer', Rule::exists('suppliers', 'id')],
+            'quantity' => ['required', 'array'],
+            'quantity.*' => ['required', 'numeric'],
+            'price' => ['array', 'nullable'],
+            'price.*' => ['numeric', 'nullable']
+        ];
+
+        $request->validate($rules);
+
+        $itemsId = $request->get('item_id');
+        $quantities = $request->get('quantity');
+        $prices = $request->get('price');
+        $supplier = Supplier::find($request->get('supplier_id'));
+        $supplierItems = $supplier->items->map(function (Item $itm) {
+            return $itm->id;
+        })->toArray();
+        $hasItems = true;
+        foreach ($itemsId as $value) {
+            if (in_array($value, $supplierItems)) {
+                $hasItems = $hasItems && true;
+            } else {
+                $hasItems = false;
+            }
+        }
+
+        $data = [];
+        for ($i = 0; $i < count($itemsId); $i++) {
+            $item = $itemsId[$i];
+            $quantity = $quantities[$i];
+            $price = $prices[$i] ?? null;
+            $data[$item] = ['supplier_id' => $request->get('supplier_id'), 'quantity' => $quantity, 'price' => $prices ? $price : null];
+        }
+        if ($hasItems) $order->items()->attach($data);
+
+        return response()->json();
+
+    }
 
     public function setOrderStatus(Request $request, Order $order) {
         $rule = [
