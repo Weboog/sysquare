@@ -282,10 +282,12 @@ class OrderController extends Controller
     public function addItems(Request $request, Order $order): JsonResponse
     {
 
+
         $rules = [
-            'item_id' => ['required', 'array'],
-            'item_id.*' => ['required', 'integer', Rule::exists('items', 'id')],
-            'supplier_id' => ['required', 'integer', Rule::exists('suppliers', 'id')],
+            'item' => ['required', 'array'],
+            'item.*' => ['required', 'integer', Rule::exists('items', 'id')],
+            'supplier' => ['required', 'array'],
+            'supplier.*' => ['required', 'integer', Rule::exists('suppliers', 'id')],
             'quantity' => ['required', 'array'],
             'quantity.*' => ['required', 'numeric'],
             'price' => ['array', 'nullable'],
@@ -294,30 +296,35 @@ class OrderController extends Controller
 
         $request->validate($rules);
 
-        $itemsId = $request->get('item_id');
+//        return response()->json($request->all());
+
+        $itemsId = $request->get('item');
         $quantities = $request->get('quantity');
-        $prices = $request->get('price');
-        $supplier = Supplier::find($request->get('supplier_id'));
+        $prices = array_map(function ($p) { return $p == '0' ? null : $p;}, $request->get('price'));
+        $supplier = Supplier::find($request->get('supplier')[0]);
         $supplierItems = $supplier->items->map(function (Item $itm) {
             return $itm->id;
         })->toArray();
-        $hasItems = true;
-        foreach ($itemsId as $value) {
-            if (in_array($value, $supplierItems)) {
-                $hasItems = $hasItems && true;
-            } else {
-                $hasItems = false;
-            }
-        }
+
+        //Check if items belongs to tyhe supplier
+//        $hasItems = true;
+//        foreach ($itemsId as $value) {
+//            if (in_array($value, $supplierItems)) {
+//                $hasItems = $hasItems && true;
+//            } else {
+//                $hasItems = false;
+//            }
+//        }
 
         $data = [];
         for ($i = 0; $i < count($itemsId); $i++) {
             $item = $itemsId[$i];
             $quantity = $quantities[$i];
             $price = $prices[$i] ?? null;
-            $data[$item] = ['supplier_id' => $request->get('supplier_id'), 'quantity' => $quantity, 'price' => $prices ? $price : null];
+            $data[$item] = ['supplier_id' => $request->get('supplier')[0], 'quantity' => $quantity, 'price' => $prices ? $price : null];
         }
-        if ($hasItems) $order->items()->attach($data);
+//        if ($hasItems)
+        $order->items()->attach($data);
 
         return response()->json();
 

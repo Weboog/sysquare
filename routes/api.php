@@ -46,7 +46,7 @@ Route::middleware('auth:api')->group(function () {
     Route::get('orders/{order}/invoices', [OrderController::class, 'invoices']);
     Route::patch('orders/{order}/setProperty', [OrderController::class, 'setOrderStatus']);
     Route::patch('orders/{order}/setPivotProperty', [OrderController::class, 'setPivotProperty']);
-    Route::patch('orders/{order}/addItems', [OrderController::class, 'addItems']);
+    Route::post('orders/{order}/items', [OrderController::class, 'addItems']);
     Route::delete('orders/{order}/items', [OrderController::class, 'deleteItems']);
     Route::prefix('missed')->group(function(){
         Route::get('items', [OrderController::class, 'missedItems']);
