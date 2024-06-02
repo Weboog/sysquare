@@ -33,9 +33,10 @@ Route::middleware('auth:api')->group(function () {
     Route::get('items/{item}/suppliers', [ItemController::class, 'suppliers']);
     Route::get('items/{item}/orders', [ItemController::class, 'orders']);
     Route::get('items/{item}/orderSuppliers', [ItemController::class, 'orderSuppliers']);
-    Route::prefix('stats')->group(function () {
-        Route::get('item/{item}', [ItemController::class, 'statItem']);
-    });
+    Route::get('items/{item}/stats', [ItemController::class, 'statItem']);
+//    Route::prefix('stats')->group(function () {
+//        Route::get('item/{item}', [ItemController::class, 'statItem']);
+//    });
 
     //Missing////////////////////////////////////////////////////////////////////////////////////////
     Route::resource('missings', MissingController::class)->only('index');

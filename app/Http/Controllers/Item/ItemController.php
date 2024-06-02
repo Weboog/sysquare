@@ -251,9 +251,9 @@ class ItemController extends Controller
         return response()->json([
             'orders' => $total->count(),
             'months' => $interval ? $s->diffInMonths($d) : Carbon::parse($total->first()[2])->diffInMonths(Carbon::parse($total->last()[2])),
-            'price' => $total->reduce(fn($c, $arr) => $c + $arr[0]),
+            'price' => $total->reduce(fn($c, $arr) => $c + $arr[0] * $arr[1]),
             'quantity' => $total->reduce(fn($c, $arr) => $c + $arr[1]),
-            'period' => $interval ? ['start' => $s->toDateString(), 'end' => $d->toDateString()] : 'Tout',
+            'period' => $interval ? ['start' => $s->toDateString(), 'end' => $d->toDateString()] : null,
             'chart' => $total->map(fn($arr) => ['price' => $arr[0], 'quantity' => $arr[1], 'date' => $arr[2]])
         ], 200);
 
