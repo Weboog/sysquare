@@ -18,6 +18,7 @@ use App\Http\Resources\OrderSupplierResource;
 use App\Models\Supplier;
 use App\Rules\OrderStatusRule;
 use App\Traits\Filters;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -51,6 +52,14 @@ class OrderController extends Controller
 
             if ($key == 'status' and in_array($value, array_map(fn($case) => $case->value, OrderStatus::cases()))) {
                 $orders->where('status', $value);
+            }
+
+            if($key === 'suppliers'){
+                if ($value)
+                    $suppliers = explode('-', $value);
+                $orders->whereHas('suppliers', function ($q) use($suppliers) {
+                    return $q->whereIn('suppliers.id', $suppliers);
+                });
             }
 
             if ($key == 'q' and $value != 'null') {
@@ -101,6 +110,7 @@ class OrderController extends Controller
     {
 
         $rules = [
+            'date' => ['string', 'nullable'],
             'item' => ['required', 'array'],
             'item.*' => ['numeric', Rule::exists('items', 'id')],
             'supplier' => ['required', 'array'],
@@ -113,17 +123,29 @@ class OrderController extends Controller
 
         $request->validate($rules);
 
-        return DB::transaction(function () use ($request){
+        $request->date
+            ? $carbon = Carbon::createFromFormat('d/m/Y', $request->date)
+            : $carbon = Carbon::now();
+
+        return DB::transaction(function () use ($request, $carbon){
 
             $order = Order::create([
-                'serial' => Date::now()->format('Ym')
+                'serial' => Date::now()->format('Ym'),
+                'created_at' => $carbon->toDate(),
             ]);
+
 
             $orders = []; //[item_id => [supplier_id, quantity]]
             foreach ($request->item as $key => $value) {
+
+                //////////////////////////////////////////////
+                $item = Item::find($value);
+                $s = $item->suppliers()->where('suppliers.id', $request->supplier[$key])->first();
+                //////////////////////////////////////////////
+
                 $orders[$value] = [
                     'supplier_id' => $request->supplier[$key],
-                    'price' => $request->price[$key] !== '0' ? $request->price[$key] : null,
+                    'price' => $request->price[$key] !== '0' ? $request->price[$key] : ($s ? $s->pivot->price : null),
                     'quantity' => $request->quantity[$key]
                 ];
             }
@@ -264,8 +286,6 @@ class OrderController extends Controller
     public function deleteItems(Request $request, Order $order)
     {
 
-//        return response()->json();
-
         $rules = [
             'items' => ['required', 'array'],
             'items.*' => ['required', 'integer', Rule::exists('items', 'id')],
@@ -302,9 +322,9 @@ class OrderController extends Controller
         $quantities = $request->get('quantity');
         $prices = array_map(function ($p) { return $p == '0' ? null : $p;}, $request->get('price'));
         $supplier = Supplier::find($request->get('supplier')[0]);
-        $supplierItems = $supplier->items->map(function (Item $itm) {
-            return $itm->id;
-        })->toArray();
+//        $supplierItems = $supplier->items->map(function (Item $itm) {
+//            return $itm->id;
+//        })->toArray();
 
         //Check if items belongs to tyhe supplier
 //        $hasItems = true;
@@ -320,8 +340,8 @@ class OrderController extends Controller
         for ($i = 0; $i < count($itemsId); $i++) {
             $item = $itemsId[$i];
             $quantity = $quantities[$i];
-            $price = $prices[$i] ?? null;
-            $data[$item] = ['supplier_id' => $request->get('supplier')[0], 'quantity' => $quantity, 'price' => $prices ? $price : null];
+            $price = $prices[$i] ?? Item::find($item)->suppliers()->where('suppliers.id', $request->get('supplier')[0])->first()->pivot->price;
+            $data[$item] = ['supplier_id' => $request->get('supplier')[0], 'quantity' => $quantity, 'price' => $price];
         }
 //        if ($hasItems)
         $order->items()->attach($data);
@@ -351,6 +371,7 @@ class OrderController extends Controller
             $preparedArray['pivot'][] = $a;
         }
 
+        //Data if assign to a supplier
         if ($request->supplier_item) $preparedArray['supplier_item'] = $request->supplier_item;
         if ($request->supplier_id) $preparedArray['supplier_id'] = $request->supplier_id;
         if ($request->supplier_price) $preparedArray['supplier_price'] = $request->supplier_price;

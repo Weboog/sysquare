@@ -15,9 +15,11 @@ use App\Http\Resources\BrandResource;
 use App\Http\Resources\CategoryResource;
 use App\Http\Resources\ItemSupplierResource;
 use App\Http\Resources\TypeResource;
+use App\Models\Order;
 use App\Models\Supplier;
 use App\Models\Type;
 use App\Traits\Filters;
+use Carbon\Carbon;
 use Illuminate\Validation\ValidationRule;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -219,6 +221,42 @@ class ItemController extends Controller
     {
         $item->deleteOrFail();
         return response()->json(['message' => 'DELETED'], 200);
+    }
+
+    /**
+     * Stats ********************************************************
+     */
+    public function statItem(int $id): JsonResponse
+    {
+
+        $orders = Order::withWhereHas('items', function($query) use($id) {
+            $query->where('items.id', $id);
+        });
+
+        if($interval = request('interval')) {
+            $i = explode(':', $interval);
+            $s = Carbon::createFromFormat('Ymd', $i[0]);
+            $d = Carbon::createFromFormat('Ymd', $i[1]);
+            $orders->whereBetween('created_at', [$s, $d]);
+        }
+
+        if ($orders->get()->isEmpty()) return response()->json(['message' => 'EMPTY'], 404);
+
+        $total = $orders->get()->map(function($order) {
+            $itm = $order->items()->first()->pivot;
+            $date = $order->created_at;
+            return  [(double) $itm->price, (double) $itm->quantity, $date];
+        });
+
+        return response()->json([
+            'orders' => $total->count(),
+            'months' => $interval ? $s->diffInMonths($d) : Carbon::parse($total->first()[2])->diffInMonths(Carbon::parse($total->last()[2])),
+            'price' => $total->reduce(fn($c, $arr) => $c + $arr[0]),
+            'quantity' => $total->reduce(fn($c, $arr) => $c + $arr[1]),
+            'period' => $interval ? ['start' => $s->toDateString(), 'end' => $d->toDateString()] : 'Tout',
+            'chart' => $total->map(fn($arr) => ['price' => $arr[0], 'quantity' => $arr[1], 'date' => $arr[2]])
+        ], 200);
+
     }
 
     /**

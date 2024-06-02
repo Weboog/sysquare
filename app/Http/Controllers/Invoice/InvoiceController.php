@@ -35,10 +35,10 @@ class InvoiceController extends Controller
             'order_id' => ['required', 'numeric', Rule::exists('orders', 'id')],
             'supplier_id' => ['required', 'numeric', Rule::exists('suppliers', 'id')],
             'reference' => ['required', 'string'],
+            'amount' => ['required', 'numeric', 'min:1'],
             'comment' => ['nullable', 'string']
         ];
         $request->validate($rules);
-
 
         $invoice = Invoice::create($request->all());
 
@@ -62,12 +62,14 @@ class InvoiceController extends Controller
     {
         $rules = [
             'number' => ['nullable', 'string'],
+            'amount' => ['nullable', 'numeric'],
             'comment' => ['nullable', 'string'],
         ];
 
         $request->validate($rules);
 
          if ($request->number) $invoice->reference = $request->number;
+         $invoice->amount =  $request->amount;
         $invoice->comment = $request->comment;
 
         if ($invoice->save()) {

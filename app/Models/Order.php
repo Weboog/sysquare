@@ -15,7 +15,7 @@ class Order extends Model
 
     use HasFactory, SoftDeletes, Helper;
 
-    protected $fillable = ['serial', 'status'];
+    protected $fillable = ['serial', 'status', 'created_at'];
 
     protected $hidden = ['pivot'];
 

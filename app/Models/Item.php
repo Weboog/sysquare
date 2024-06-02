@@ -80,7 +80,7 @@ class Item extends Model
         $serial = strtoupper(
             sprintf(
                 '%s%s%s%s',
-                substr($brandName, 0, 1),
+                substr($brandName == '---' ? 0 : $brandName, 0, 1),
                 substr($categoryName, 0, 1),
 //                substr($typeName, 0, 1),
                 '0'.$typeId,

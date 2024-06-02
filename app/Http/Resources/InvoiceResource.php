@@ -19,6 +19,7 @@ class InvoiceResource extends JsonResource
         'order_id' => $this->order_id,
         'supplier_id' => $this->supplier_id,
         'reference' => $this->reference,
+        'amount' => $this->amount,
         'comment' => $this->comment,
     ];;
     }

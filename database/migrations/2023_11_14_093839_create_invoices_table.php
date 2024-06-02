@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('order_id');
             $table->unsignedBigInteger('supplier_id');
             $table->string('reference');
+            $table->double('amount');
             $table->string('comment')->nullable();
 
             $table->foreign('order_id')->references('id')->on('orders');

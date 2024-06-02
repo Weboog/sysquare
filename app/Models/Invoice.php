@@ -16,6 +16,7 @@ class Invoice extends Model
         'order_id',
         'supplier_id',
         'reference',
+        'amount',
         'comment'
     ];
 
