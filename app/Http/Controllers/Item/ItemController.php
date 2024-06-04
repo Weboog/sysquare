@@ -231,22 +231,23 @@ class ItemController extends Controller
 
         $orders = Order::withWhereHas('items', function($query) use($id) {
             $query->where('items.id', $id);
-        });
+        })->orderBy('created_at');
 
         if($interval = request('interval')) {
             $i = explode(':', $interval);
-            $s = Carbon::createFromFormat('Ymd', $i[0]);
-            $d = Carbon::createFromFormat('Ymd', $i[1]);
+            $s = Carbon::createFromFormat('dmY', $i[0]);
+            $d = Carbon::createFromFormat('dmY', $i[1]);
             $orders->whereBetween('created_at', [$s, $d]);
         }
 
         if ($orders->get()->isEmpty()) return response()->json(['message' => 'EMPTY'], 404);
 
         $total = $orders->get()->map(function($order) {
-            $itm = $order->items()->first()->pivot;
+            $itm = $order->items->first()->pivot;
             $date = $order->created_at;
             return  [(double) $itm->price, (double) $itm->quantity, $date];
         });
+
 
         return response()->json([
             'orders' => $total->count(),
